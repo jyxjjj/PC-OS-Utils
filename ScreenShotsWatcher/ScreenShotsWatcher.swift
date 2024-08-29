@@ -9,23 +9,31 @@ func CopyDataToClipboard(_ data: Data) {
     clipboard.setData(data as Data, forType: .png)
 }
 
-func askForConfirmation(_ filename: String) -> Bool {
-    let message: CFString = "Do you want to move \(filename) to the clipboard?" as CFString
+func askForConfirmation(_ filename: String) -> Int {
     var responseFlags: CFOptionFlags = 0
     CFUserNotificationDisplayAlert(
-        0, kCFUserNotificationNoteAlertLevel,
-        nil, nil, nil,
-        "Confirmation" as CFString,
-        message,
-        "Yes"as CFString, "No"as CFString, nil,
-        &responseFlags
+        0, // Timeout
+        kCFUserNotificationCautionAlertLevel, // Alert Level
+        nil, // iconURL
+        nil, // soundURL
+        nil, // localizationURL
+        "Trash" as CFString, // alertHeader
+        filename as CFString, // alertMessage
+        "Trash" as CFString, // defaultButtonTitle
+        "Cancel" as CFString, // alternateButtonTitle
+        "Delete" as CFString, // otherButtonTitle
+        &responseFlags // Response Flags
     )
-    return responseFlags == kCFUserNotificationDefaultResponse
-}
-
-func moveToTrash(_ path: String) {
-    let url = URL(fileURLWithPath: path)
-    try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+    if responseFlags == kCFUserNotificationDefaultResponse {
+        return 1
+    }
+    if responseFlags == kCFUserNotificationAlternateResponse {
+        return 0
+    }
+    if responseFlags == kCFUserNotificationOtherResponse {
+        return 2
+    }
+    return 0
 }
 
 func callback(
@@ -42,17 +50,25 @@ func callback(
     for i in 0 ..< numEvents {
         let path = paths[i]
         let filename = path.components(separatedBy: "/").last!
-        if filename.hasPrefix(".") || !filename.hasPrefix("Screenshot") || !filename.hasSuffix(".png") || !FileManager.default.fileExists(atPath: filename) {
+        if filename.hasPrefix(".") || !filename.hasPrefix("Screenshot") || !filename.hasSuffix(".png") || !FileManager.default.fileExists(atPath: path) {
             continue
         } else {
-            print("Processing \(filename)")
+            print("Processing '\(filename)'")
         }
-        if let data = FileManager.default.contents(atPath: filename) {
+        if let data = FileManager.default.contents(atPath: path) {
             CopyDataToClipboard(data)
-            print("Copied \(filename) to clipboard")
-            if askForConfirmation(filename) {
-                moveToTrash(path)
-                print("Moved \(filename) to trash")
+            print("Copied '\(filename)' to clipboard")
+            let askResult = askForConfirmation(path)
+            if askResult == 1 {
+                try? FileManager.default.trashItem(at: URL(fileURLWithPath: path), resultingItemURL: nil)
+                print("Moved '\(filename)' to trash")
+            }
+            if askResult == 2 {
+                try? FileManager.default.removeItem(atPath: path)
+                print("Deleted '\(filename)'")
+            }
+            if askResult == 0 {
+                print("Did not trash or delete '\(filename)'")
             }
         }
     }
