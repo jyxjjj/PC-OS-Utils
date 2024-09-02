@@ -8,7 +8,7 @@ Helpful for who needs edit the image right after taking a screenshot.
 
 ## How to use
 
-1. run `./setting.sh` to set the path to save screenshots.
+1. run `./settings.sh` to set the path to save screenshots.
 
 2. run `./build.sh` to build the script.
 
