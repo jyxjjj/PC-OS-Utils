@@ -1,4 +1,6 @@
 #!/bin/bash
+mkdir -p ~/Downloads/ScreenShots
+echo "Creating Folder '~/Downloads/ScreenShots'"
 defaults write com.apple.screencapture location "~/Downloads/ScreenShots"
 echo "Updated the ScreenShot Settings 'location' to '~/Downloads/ScreenShots'"
 defaults write com.apple.screencapture showsCursor 1
