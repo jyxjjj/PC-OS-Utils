@@ -8,27 +8,32 @@ Helpful for who needs edit the image right after taking a screenshot.
 
 ## How to use
 
-1. run `./settings.sh` to set the path to save screenshots.
+1. Edit the swift file to change the filename filter (may near line 63) to match your system language.
 
-2. run `./build.sh` to build the script.
+2. Run `./settings.sh` to set the path to save screenshots.
 
-3. run `./run.sh` to start watching for new screenshots.
+3. Run `./build.sh` to build the script.
 
-4. Allow the access of Downloads Folder when a popup appears.
+4. Run `./run.sh` to start watching for new screenshots.
 
-5. Take a screenshot and the script will copy the image to clipboard.
+5. Allow the access of Downloads Folder when a popup appears.
+
+6. Take a screenshot and the script will copy the image to clipboard.
 
 ## Appearance
 
 The built-in `Screenshot.app` supports three situations:
 
 1. Save directly to the clipboard
+   
    (<kbd>Command+Shift+5</kbd> → Options → [Save To Section] → Clipboard)
 
 3. Save directly to a file
+   
    (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [] Show Floating Thumbnail)
 
-4. Show the preview window before saving to a file
+5. Show the preview window before saving to a file
+   
    (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [x] Show Floating Thumbnail)
 
 There are two ways to edit the picture:
