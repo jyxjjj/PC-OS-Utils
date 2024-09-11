@@ -20,7 +20,7 @@ echo "Updated settings to show preview thumbnail in the bottom-right corner of t
 # target = file;
 defaults write com.apple.screencapture target file
 echo "Updated settings to save screenshots to file"
-# video
+# video = 0;
 defaults write com.apple.screencapture video 0
 echo "Updated settings to disable video capture by default"
 # Restart SystemUIServer
