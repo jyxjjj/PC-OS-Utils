@@ -26,10 +26,10 @@ The built-in `Screenshot.app` supports three situations:
    (<kbd>Command+Shift+5</kbd> → Options → [Save To Section] → Clipboard)
 
 3. Save directly to a file
-   (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [ ] Show Floating Thumbnail)
+   (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [] Show Floating Thumbnail)
 
 4. Show the preview window before saving to a file
-   (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [ x ] Show Floating Thumbnail)
+   (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [x] Show Floating Thumbnail)
 
 There are two ways to edit the picture:
 
