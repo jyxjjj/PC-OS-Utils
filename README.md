@@ -1,5 +1,5 @@
 # PC-OS-Utils
 
-* [Windows](../../tree/Windows)
-* [macOS](../../tree/macOS)
-* [Linux](../../tree/Linux)
+* [Windows](https://github.com/jyxjjj/PC-OS-Utils/tree/Windows)
+* [macOS](https://github.com/jyxjjj/PC-OS-Utils/tree/macOS)
+* [Fedora](https://github.com/jyxjjj/PC-OS-Utils/tree/Fedora)
