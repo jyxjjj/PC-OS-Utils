@@ -5,7 +5,7 @@ if [ ! -d ~/Downloads/ScreenShots ]; then
     echo "Maybe you can set defaults of /System/Applications/Utilities/Screenshot.app via settings.sh"
     exit 1
 fi
-cat <<EOF > $HOME/Library/LaunchAgents/ScreenShotsWatcher.plist
+cat <<EOF > $HOME/Library/LaunchAgents/com.desmg.ScreenShotsWatcher.plist
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -24,8 +24,8 @@ cat <<EOF > $HOME/Library/LaunchAgents/ScreenShotsWatcher.plist
 </plist>
 EOF
 
-launchctl unload $HOME/Library/LaunchAgents/ScreenShotsWatcher.plist 2>/dev/null
-launchctl load $HOME/Library/LaunchAgents/ScreenShotsWatcher.plist 2>/dev/null
+launchctl unload $HOME/Library/LaunchAgents/com.desmg.ScreenShotsWatcher.plist 2>/dev/null
+launchctl load $HOME/Library/LaunchAgents/com.desmg.ScreenShotsWatcher.plist 2>/dev/null
 
-ls -al $HOME/Library/LaunchAgents/ScreenShotsWatcher.plist
+ls -al $HOME/Library/LaunchAgents/com.desmg.ScreenShotsWatcher.plist
 ps -ef | grep ScreenShotsWatcher | grep -v grep
