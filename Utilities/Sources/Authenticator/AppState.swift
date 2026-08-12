@@ -44,10 +44,13 @@ final class AppState {
         let trimmedServiceName = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedServiceName.isEmpty else { throw AuthError.emptyServiceName }
-        guard !trimmedServiceName.contains(":"), !trimmedUsername.contains(":") else {
+        guard !trimmedServiceName.contains(AppConstants.Authenticator.labelSeparator),
+              !trimmedUsername.contains(AppConstants.Authenticator.labelSeparator) else {
             throw AuthError.invalidLabel
         }
-        guard (6 ... 8).contains(digits), TOTPEngine.supportedPeriods.contains(period) else {
+        guard (AppConstants.Authenticator.minimumDigits ...
+               AppConstants.Authenticator.maximumDigits).contains(digits),
+              AppConstants.Authenticator.supportedPeriods.contains(period) else {
             throw AuthError.invalidParameters
         }
         let secretData = try Base32Codec.decode(secret)
@@ -81,10 +84,13 @@ final class AppState {
         period: Int
     ) async throws {
         guard !serviceName.isEmpty else { throw AuthError.emptyServiceName }
-        guard !serviceName.contains(":"), !username.contains(":") else {
+        guard !serviceName.contains(AppConstants.Authenticator.labelSeparator),
+              !username.contains(AppConstants.Authenticator.labelSeparator) else {
             throw AuthError.invalidLabel
         }
-        guard (6 ... 8).contains(digits), TOTPEngine.supportedPeriods.contains(period) else {
+        guard (AppConstants.Authenticator.minimumDigits ...
+               AppConstants.Authenticator.maximumDigits).contains(digits),
+              AppConstants.Authenticator.supportedPeriods.contains(period) else {
             throw AuthError.invalidParameters
         }
         let entry = TOTPEntry(
@@ -108,11 +114,13 @@ final class AppState {
         normalizedEntry.serviceName = entry.serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
         normalizedEntry.username = entry.username.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedEntry.serviceName.isEmpty else { throw AuthError.emptyServiceName }
-        guard !normalizedEntry.serviceName.contains(":"), !normalizedEntry.username.contains(":") else {
+        guard !normalizedEntry.serviceName.contains(AppConstants.Authenticator.labelSeparator),
+              !normalizedEntry.username.contains(AppConstants.Authenticator.labelSeparator) else {
             throw AuthError.invalidLabel
         }
-        guard (6 ... 8).contains(normalizedEntry.digits),
-              TOTPEngine.supportedPeriods.contains(normalizedEntry.period) else {
+        guard (AppConstants.Authenticator.minimumDigits ...
+               AppConstants.Authenticator.maximumDigits).contains(normalizedEntry.digits),
+              AppConstants.Authenticator.supportedPeriods.contains(normalizedEntry.period) else {
             throw AuthError.invalidParameters
         }
         guard entries[index] != normalizedEntry else { return }
@@ -155,7 +163,9 @@ final class AppState {
 
     func exportData() throws -> Data {
         let uriLines = try entries.map(OTPAuthURIBuilder.make)
-        return Data(uriLines.joined(separator: "\n").utf8)
+        return Data(
+            uriLines.joined(separator: AppConstants.Authenticator.OTPAuth.lineSeparator).utf8
+        )
     }
 
     @discardableResult
@@ -188,11 +198,11 @@ final class AppState {
 
         var errorDescription: String? {
             switch self {
-            case .entryNotFound: return "未找到账户"
-            case .invalidOrder: return "账户排序数据无效"
-            case .emptyServiceName: return "服务名称不能为空"
-            case .invalidLabel: return "服务名称和用户名不能包含冒号"
-            case .invalidParameters: return "验证码位数或周期无效"
+            case .entryNotFound: return AppConstants.Authenticator.State.entryNotFound
+            case .invalidOrder: return AppConstants.Authenticator.State.invalidOrder
+            case .emptyServiceName: return AppConstants.Authenticator.State.emptyServiceName
+            case .invalidLabel: return AppConstants.Authenticator.State.invalidLabel
+            case .invalidParameters: return AppConstants.Authenticator.State.invalidParameters
             }
         }
     }
@@ -201,7 +211,7 @@ final class AppState {
         case invalidAccount
 
         var errorDescription: String? {
-            "无法创建 OTP Auth URI"
+            AppConstants.Authenticator.OTPAuth.invalidAccount
         }
     }
 
@@ -209,21 +219,44 @@ final class AppState {
 
 nonisolated enum OTPAuthURIBuilder {
     static func make(_ entry: TOTPEntry) throws -> String {
-        guard !entry.serviceName.contains(":"), !entry.username.contains(":") else {
+        guard !entry.serviceName.contains(AppConstants.Authenticator.labelSeparator),
+              !entry.username.contains(AppConstants.Authenticator.labelSeparator) else {
             throw AppState.AuthError.invalidLabel
         }
         var components = URLComponents()
-        components.scheme = "otpauth"
-        components.host = "totp"
+        components.scheme = AppConstants.Authenticator.OTPAuth.scheme
+        components.host = AppConstants.Authenticator.OTPAuth.host
         components.path = entry.username.isEmpty
-            ? "/\(entry.serviceName)"
-            : "/\(entry.serviceName):\(entry.username)"
+            ? String(
+                format: AppConstants.Authenticator.OTPAuth.servicePathFormat,
+                entry.serviceName
+            )
+            : String(
+                format: AppConstants.Authenticator.OTPAuth.accountPathFormat,
+                entry.serviceName,
+                entry.username
+            )
         components.queryItems = [
-            URLQueryItem(name: "secret", value: Base32Codec.encode(entry.secret)),
-            URLQueryItem(name: "issuer", value: entry.serviceName),
-            URLQueryItem(name: "algorithm", value: entry.algorithm.rawValue),
-            URLQueryItem(name: "digits", value: String(entry.digits)),
-            URLQueryItem(name: "period", value: String(entry.period)),
+            URLQueryItem(
+                name: AppConstants.Authenticator.OTPAuth.secretQueryName,
+                value: Base32Codec.encode(entry.secret)
+            ),
+            URLQueryItem(
+                name: AppConstants.Authenticator.OTPAuth.issuerQueryName,
+                value: entry.serviceName
+            ),
+            URLQueryItem(
+                name: AppConstants.Authenticator.OTPAuth.algorithmQueryName,
+                value: entry.algorithm.rawValue
+            ),
+            URLQueryItem(
+                name: AppConstants.Authenticator.OTPAuth.digitsQueryName,
+                value: String(entry.digits)
+            ),
+            URLQueryItem(
+                name: AppConstants.Authenticator.OTPAuth.periodQueryName,
+                value: String(entry.period)
+            ),
         ]
         guard let uri = components.string else {
             throw AppState.ExportError.invalidAccount
@@ -233,10 +266,8 @@ nonisolated enum OTPAuthURIBuilder {
 }
 
 nonisolated enum OTPAuthImportParser {
-    static let maximumFileSize = 1_048_576
-
     static func parse(_ fileData: Data) throws -> [TOTPEntry] {
-        guard fileData.count <= maximumFileSize else {
+        guard fileData.count <= AppConstants.Authenticator.OTPAuth.maximumFileSize else {
             throw ImportError.fileTooLarge
         }
         guard let contents = String(data: fileData, encoding: .utf8) else {
@@ -270,10 +301,10 @@ nonisolated enum OTPAuthImportParser {
 
         var errorDescription: String? {
             switch self {
-            case .fileTooLarge: "导入文件不能超过 1 MiB"
-            case .invalidEncoding: "导入文件必须是 UTF-8 文本"
-            case .noAccounts: "导入文件中不包含 OTP Auth URI"
-            case .duplicateAccount: "导入文件包含重复或已存在的账户"
+            case .fileTooLarge: AppConstants.Authenticator.OTPAuth.fileTooLarge
+            case .invalidEncoding: AppConstants.Authenticator.OTPAuth.invalidEncoding
+            case .noAccounts: AppConstants.Authenticator.OTPAuth.noAccounts
+            case .duplicateAccount: AppConstants.Authenticator.OTPAuth.duplicateAccount
             }
         }
     }

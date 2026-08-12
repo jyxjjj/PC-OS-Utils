@@ -13,40 +13,57 @@ struct ExportImportView: View {
     @State private var isImporting = false
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: AppConstants.Authenticator.Transfer.stackSpacing) {
             HStack {
-                Text("导出 / 导入").font(.headline)
+                Text(AppConstants.Authenticator.Transfer.title).font(.headline)
                 Spacer()
-                Button("完成") { dismiss() }
+                Button(AppConstants.Authenticator.Transfer.done) { dismiss() }
             }
             .padding()
 
             Divider()
 
-            VStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("将完整的 otpauth:// URI 导出为 UTF-8 文本",
-                          systemImage: "doc.plaintext")
-                    Label("导出内容包含明文 TOTP 密钥",
-                          systemImage: "exclamationmark.triangle.fill")
+            VStack(spacing: AppConstants.Authenticator.Transfer.contentSpacing) {
+                VStack(
+                    alignment: .leading,
+                    spacing: AppConstants.Authenticator.Transfer.descriptionSpacing
+                ) {
+                    Label(
+                        AppConstants.Authenticator.Transfer.exportDescription,
+                        systemImage: "doc.plaintext"
+                    )
+                    Label(
+                        AppConstants.Authenticator.Transfer.secretWarning,
+                        systemImage: "exclamationmark.triangle.fill"
+                    )
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .padding()
-                .background(Color.secondary.opacity(0.08))
-                .cornerRadius(8)
+                .background(
+                    Color.secondary.opacity(
+                        AppConstants.Authenticator.Transfer.descriptionOpacity
+                    )
+                )
+                .cornerRadius(AppConstants.Authenticator.Transfer.descriptionCornerRadius)
                 .padding(.horizontal)
 
-                HStack(spacing: 16) {
+                HStack(spacing: AppConstants.Authenticator.Transfer.buttonsSpacing) {
                     Button(action: prepareExport) {
-                        Label("导出", systemImage: "square.and.arrow.up")
+                        Label(
+                            AppConstants.Authenticator.Transfer.export,
+                            systemImage: "square.and.arrow.up"
+                        )
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
 
                     Button { showImport = true } label: {
-                        Label("导入", systemImage: "square.and.arrow.down")
+                        Label(
+                            AppConstants.Authenticator.Transfer.`import`,
+                            systemImage: "square.and.arrow.down"
+                        )
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -64,19 +81,29 @@ struct ExportImportView: View {
             }
             .padding(.top)
         }
-        .frame(width: 440, height: 300)
+        .frame(
+            width: AppConstants.Authenticator.Transfer.width,
+            height: AppConstants.Authenticator.Transfer.height
+        )
         .disabled(isImporting)
         .interactiveDismissDisabled(isImporting)
         .overlay {
             if isImporting {
                 ZStack {
                     Rectangle()
-                        .fill(.black.opacity(0.22))
+                        .fill(
+                            .black.opacity(AppConstants.Authenticator.Transfer.overlayOpacity)
+                        )
                         .ignoresSafeArea()
-                    ProgressView("正在导入…")
+                    ProgressView(AppConstants.Authenticator.Transfer.importing)
                         .controlSize(.large)
-                        .padding(24)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(AppConstants.Authenticator.Transfer.progressPadding)
+                        .background(
+                            .regularMaterial,
+                            in: RoundedRectangle(
+                                cornerRadius: AppConstants.Authenticator.Transfer.progressCornerRadius
+                            )
+                        )
                 }
                 .allowsHitTesting(true)
             }
@@ -85,11 +112,11 @@ struct ExportImportView: View {
             isPresented: $showExport,
             document: exportDocument,
             contentType: .plainText,
-            defaultFilename: "身份验证器账户.txt"
+            defaultFilename: AppConstants.Authenticator.Transfer.exportFilename
         ) { result in
             switch result {
             case .success:
-                message = "导出成功"
+                message = AppConstants.Authenticator.Transfer.exportSucceeded
                 isSuccess = true
             case .failure(let error):
                 message = error.localizedDescription
@@ -140,14 +167,17 @@ struct ExportImportView: View {
 
                     let values = try url.resourceValues(forKeys: [.fileSizeKey])
                     if let fileSize = values.fileSize,
-                       fileSize > OTPAuthImportParser.maximumFileSize {
+                       fileSize > AppConstants.Authenticator.OTPAuth.maximumFileSize {
                         throw OTPAuthImportParser.ImportError.fileTooLarge
                     }
                     let data = try Data(contentsOf: url, options: .mappedIfSafe)
                     return try OTPAuthImportParser.parse(data)
                 }.value
                 let importedCount = try await appState.importEntries(candidates)
-                message = "导入成功，新增 \(importedCount) 个账户"
+                message = String(
+                    format: AppConstants.Authenticator.Transfer.importSucceededFormat,
+                    importedCount
+                )
                 isSuccess = true
             } catch {
                 message = error.localizedDescription

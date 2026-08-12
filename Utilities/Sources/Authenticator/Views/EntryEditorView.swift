@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import CryptoKit
 
@@ -5,10 +6,11 @@ private struct AuthenticatorRequiredFieldLabel: View {
     let title: String
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: AppConstants.Authenticator.Editor.requiredFieldSpacing) {
             Text(title)
-            Text("*").foregroundStyle(.red)
+            Text(AppConstants.Common.requiredFieldMarker).foregroundStyle(.red)
         }
+        .font(.body)
     }
 }
 
@@ -34,18 +36,22 @@ struct EntryEditorView: View {
         self.entry = entry
         _serviceName = State(initialValue: entry?.serviceName ?? "")
         _username = State(initialValue: entry?.username ?? "")
-        _algorithm = State(initialValue: entry?.algorithm ?? .sha1)
-        _digits = State(initialValue: entry?.digits ?? 6)
-        _period = State(initialValue: entry?.period ?? 30)
+        _algorithm = State(initialValue: entry?.algorithm ?? .sha256)
+        _digits = State(initialValue: entry?.digits ?? AppConstants.Authenticator.defaultDigits)
+        _period = State(initialValue: entry?.period ?? AppConstants.Authenticator.defaultPeriod)
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: AppConstants.Authenticator.Editor.contentSpacing) {
             HStack {
-                Text(entry == nil ? "添加账户" : "编辑账户")
+                Text(
+                    entry == nil
+                        ? AppConstants.Authenticator.Editor.addTitle
+                        : AppConstants.Authenticator.Editor.editTitle
+                )
                     .font(.headline)
                 Spacer()
-                Button("取消") { dismiss() }
+                Button(AppConstants.Common.cancel) { dismiss() }
                     .keyboardShortcut(.escape)
             }
             .padding()
@@ -53,56 +59,92 @@ struct EntryEditorView: View {
             Divider()
 
             Form {
-                Section("账户信息") {
-                    TextField(text: $serviceName, prompt: Text("例如 GitHub")) {
-                        AuthenticatorRequiredFieldLabel(title: "服务名称")
+                Section(AppConstants.Authenticator.Editor.accountSection) {
+                    TextField(
+                        text: $serviceName,
+                        prompt: Text(AppConstants.Authenticator.Editor.servicePrompt)
+                    ) {
+                        AuthenticatorRequiredFieldLabel(
+                            title: AppConstants.Authenticator.Editor.serviceName
+                        )
                     }
-                    TextField("用户名或备注", text: $username)
+                    TextField(AppConstants.Authenticator.Editor.username, text: $username)
                 }
                 .disabled(entry == nil && showURIInput)
 
                 if entry == nil {
-                    Section("密钥") {
-                        Toggle("改为粘贴 otpauth:// URI", isOn: $showURIInput)
+                    Section(AppConstants.Authenticator.Editor.secretSection) {
+                        Toggle(AppConstants.Authenticator.Editor.useURI, isOn: $showURIInput)
 
                         if showURIInput {
                             HStack {
                                 TextField(text: $uriString) {
-                                    AuthenticatorRequiredFieldLabel(title: "otpauth:// URI")
+                                    AuthenticatorRequiredFieldLabel(
+                                        title: AppConstants.Authenticator.Editor.uri
+                                    )
                                 }
-                                PasteButton(payloadType: String.self, onPaste: pasteURI)
-                                    .buttonStyle(.bordered)
-                                Button("解析", action: parseURI)
-                                    .buttonStyle(.bordered)
+                                ControlGroup {
+                                    Button(AppConstants.Authenticator.Editor.paste, action: pasteURI)
+                                    Button(AppConstants.Authenticator.Editor.parse, action: parseURI)
+                                }
                             }
                         } else {
                             HStack {
                                 TextField(text: $secret) {
-                                    AuthenticatorRequiredFieldLabel(title: "Base32 密钥")
+                                    AuthenticatorRequiredFieldLabel(
+                                        title: AppConstants.Authenticator.Editor.base32Secret
+                                    )
                                 }
                                 .font(.system(.body, design: .monospaced))
-                                PasteButton(payloadType: String.self, onPaste: pasteSecret)
-                                    .buttonStyle(.bordered)
-                                Button("生成", action: generateSecret)
-                                    .buttonStyle(.bordered)
+                                ControlGroup {
+                                    Button(
+                                        AppConstants.Authenticator.Editor.paste,
+                                        action: pasteSecret
+                                    )
+                                    Button(
+                                        AppConstants.Authenticator.Editor.generate,
+                                        action: generateSecret
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                Section("选项") {
+                Section(AppConstants.Authenticator.Editor.optionsSection) {
                     Picker(selection: $algorithm) {
                         ForEach(TOTPAlgorithm.allCases, id: \.self) { algorithm in
                             Text(algorithm.rawValue).tag(algorithm)
                         }
                     } label: {
-                        AuthenticatorRequiredFieldLabel(title: "算法")
+                        AuthenticatorRequiredFieldLabel(
+                            title: AppConstants.Authenticator.Editor.algorithm
+                        )
                     }
-                    Stepper(value: $digits, in: 6...8) {
-                        AuthenticatorRequiredFieldLabel(title: "位数: \(digits)")
+                    Stepper(
+                        value: $digits,
+                        in: AppConstants.Authenticator.minimumDigits ...
+                            AppConstants.Authenticator.maximumDigits
+                    ) {
+                        AuthenticatorRequiredFieldLabel(
+                            title: String(
+                                format: AppConstants.Authenticator.Editor.digitsFormat,
+                                digits
+                            )
+                        )
                     }
-                    Stepper(value: $period, in: 15...60, step: 15) {
-                        AuthenticatorRequiredFieldLabel(title: "周期: \(period) 秒")
+                    Stepper(
+                        value: $period,
+                        in: AppConstants.Authenticator.minimumPeriod ...
+                            AppConstants.Authenticator.maximumPeriod,
+                        step: AppConstants.Authenticator.periodStep
+                    ) {
+                        AuthenticatorRequiredFieldLabel(
+                            title: String(
+                                format: AppConstants.Authenticator.Editor.periodFormat,
+                                period
+                            )
+                        )
                     }
                 }
                 .disabled(entry == nil && showURIInput)
@@ -120,24 +162,41 @@ struct EntryEditorView: View {
 
             HStack {
                 Spacer()
-                Button(entry == nil ? "添加账户" : "保存更改", action: beginSave)
+                Button(
+                    entry == nil
+                        ? AppConstants.Authenticator.Editor.addTitle
+                        : AppConstants.Authenticator.Editor.saveChanges,
+                    action: beginSave
+                )
                     .disabled(!canSave || isSaving)
                     .keyboardShortcut(.return)
             }
             .padding()
         }
         .frame(
-            width: entry == nil ? 420 : 380,
-            height: entry == nil ? 520 : 380
+            minWidth: AppConstants.Authenticator.Editor.width,
+            idealWidth: AppConstants.Authenticator.Editor.width,
+            maxWidth: AppConstants.Authenticator.Editor.width,
+            minHeight: entry == nil
+                ? AppConstants.Authenticator.Editor.addMinimumHeight
+                : AppConstants.Authenticator.Editor.editMinimumHeight,
+            idealHeight: entry == nil
+                ? AppConstants.Authenticator.Editor.addIdealHeight
+                : AppConstants.Authenticator.Editor.editIdealHeight
         )
         .disabled(isSaving)
         .interactiveDismissDisabled(isSaving)
         .overlay {
             if isSaving {
-                ProgressView("正在保存…")
+                ProgressView(AppConstants.Authenticator.Editor.saving)
                     .controlSize(.large)
-                    .padding(20)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(AppConstants.Authenticator.Editor.progressPadding)
+                    .background(
+                        .regularMaterial,
+                        in: RoundedRectangle(
+                            cornerRadius: AppConstants.Authenticator.Editor.progressCornerRadius
+                        )
+                    )
                     .allowsHitTesting(true)
             }
         }
@@ -184,13 +243,13 @@ struct EntryEditorView: View {
         }
     }
 
-    private func pasteURI(_ values: [String]) {
-        guard let value = values.first else { return }
+    private func pasteURI() {
+        guard let value = NSPasteboard.general.string(forType: .string) else { return }
         uriString = value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func pasteSecret(_ values: [String]) {
-        guard let value = values.first else { return }
+    private func pasteSecret() {
+        guard let value = NSPasteboard.general.string(forType: .string) else { return }
         secret = value.trimmingCharacters(in: .whitespacesAndNewlines)
         errorMessage = ""
     }

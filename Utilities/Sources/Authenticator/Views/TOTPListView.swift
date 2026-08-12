@@ -15,7 +15,12 @@ struct TOTPListView: View {
                 if appState.entries.isEmpty {
                     emptyState
                 } else {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                    TimelineView(
+                        .periodic(
+                            from: .now,
+                            by: AppConstants.Authenticator.List.refreshInterval
+                        )
+                    ) { context in
                         List {
                             ForEach(appState.entries) { entry in
                                 TOTPRowView(entry: entry, date: context.date)
@@ -24,20 +29,20 @@ struct TOTPListView: View {
                                     edge: .trailing,
                                     allowsFullSwipe: false
                                 ) {
-                                    Button("删除", role: .destructive) {
+                                    Button(AppConstants.Common.delete, role: .destructive) {
                                         entryToDelete = entry
                                     }
                                     .tint(.red)
 
-                                    Button("编辑") {
+                                    Button(AppConstants.Common.edit) {
                                         entryToEdit = entry
                                     }
                                     .tint(.green)
                                 }
                                 .contextMenu {
-                                    Button("编辑") { entryToEdit = entry }
+                                    Button(AppConstants.Common.edit) { entryToEdit = entry }
                                     Divider()
-                                    Button("删除", role: .destructive) {
+                                    Button(AppConstants.Common.delete, role: .destructive) {
                                         entryToDelete = entry
                                     }
                                 }
@@ -48,22 +53,28 @@ struct TOTPListView: View {
                     }
                 }
             }
-            .navigationTitle("身份验证器")
+            .navigationTitle(AppConstants.Authenticator.List.title)
             .toolbar {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button { appState.lock() } label: {
-                        Label("锁定", systemImage: "lock")
+                        Label(
+                            AppConstants.Authenticator.List.lock,
+                            systemImage: "lock"
+                        )
                     }
 
                     Button { showExportImport = true } label: {
                         Label(
-                            "导出 / 导入",
+                            AppConstants.Authenticator.List.exportImport,
                             systemImage: "square.and.arrow.up.on.square"
                         )
                     }
 
                     Button { showAddEntry = true } label: {
-                        Label("添加账户", systemImage: "plus")
+                        Label(
+                            AppConstants.Authenticator.List.addAccount,
+                            systemImage: "plus"
+                        )
                     }
                 }
             }
@@ -78,42 +89,47 @@ struct TOTPListView: View {
             ExportImportView()
         }
         .alert(
-            "删除账户？",
+            AppConstants.Authenticator.List.deleteTitle,
             isPresented: Binding(
                 get: { entryToDelete != nil },
                 set: { if !$0 { entryToDelete = nil } }
             ),
             presenting: entryToDelete
         ) { entry in
-            Button("取消", role: .cancel) {}
-            Button("删除", role: .destructive) {
+            Button(AppConstants.Common.cancel, role: .cancel) {}
+            Button(AppConstants.Common.delete, role: .destructive) {
                 entryToDelete = nil
                 delete(entry)
             }
         } message: { entry in
             Text(
-                "将永久删除 \"\(entry.serviceName)\" 的验证码账户。"
-                    + "此操作无法撤销。"
+                String(
+                    format: AppConstants.Authenticator.List.deleteMessageFormat,
+                    entry.serviceName
+                )
             )
         }
         .alert(
-            "错误",
+            AppConstants.Common.error,
             isPresented: Binding(
                 get: { !errorMessage.isEmpty },
                 set: { if !$0 { errorMessage = "" } }
             )
         ) {
-            Button("确定") {}
+            Button(AppConstants.Common.confirm) {}
         } message: { Text(errorMessage) }
     }
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("暂无账户", systemImage: "key.slash")
+            Label(
+                AppConstants.Authenticator.List.emptyTitle,
+                systemImage: "key.slash"
+            )
         } description: {
-            Text("添加账户以生成验证码。")
+            Text(AppConstants.Authenticator.List.emptyDescription)
         } actions: {
-            Button("添加账户") { showAddEntry = true }
+            Button(AppConstants.Authenticator.List.addAccount) { showAddEntry = true }
         }
     }
 

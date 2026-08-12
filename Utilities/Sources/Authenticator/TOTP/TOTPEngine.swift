@@ -15,8 +15,6 @@ nonisolated struct OTPAuthParameters: Sendable {
 }
 
 nonisolated struct TOTPEngine {
-    static let supportedPeriods = [15, 30, 45, 60]
-
     static func generateCode(
         secret: Data,
         algorithm: TOTPAlgorithm,
@@ -68,7 +66,11 @@ nonisolated struct TOTPEngine {
 
         let modulo = UInt32(pow(10.0, Double(digits)))
         let code = truncated % modulo
-        return String(format: "%0\(digits)d", code)
+        return String(
+            format: AppConstants.Authenticator.OTPAuth.codeFormat,
+            digits,
+            code
+        )
     }
 
     // MARK: - OTP Auth URI parser
@@ -76,8 +78,8 @@ nonisolated struct TOTPEngine {
     static func parseOTPAuthURI(_ uri: String) throws -> OTPAuthParameters {
         let input = uri.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let components = URLComponents(string: input),
-              components.scheme?.lowercased() == "otpauth",
-              components.host?.lowercased() == "totp",
+              components.scheme?.lowercased() == AppConstants.Authenticator.OTPAuth.scheme,
+              components.host?.lowercased() == AppConstants.Authenticator.OTPAuth.host,
               components.user == nil,
               components.password == nil,
               components.port == nil,
@@ -85,14 +87,14 @@ nonisolated struct TOTPEngine {
             throw TOTPError.invalidURI
         }
 
-        let label = components.path.hasPrefix("/")
+        let label = components.path.hasPrefix(AppConstants.Authenticator.OTPAuth.pathPrefix)
             ? String(components.path.dropFirst())
             : components.path
         var issuer = ""
         var account = label
-        if label.contains(":") {
+        if label.contains(AppConstants.Authenticator.labelSeparator) {
             let parts = label.split(
-                separator: ":",
+                separator: AppConstants.Authenticator.labelSeparator,
                 maxSplits: 1,
                 omittingEmptySubsequences: false
             )
@@ -115,13 +117,15 @@ nonisolated struct TOTPEngine {
             return value
         }
 
-        guard let encodedSecret = try queryValue("secret"),
+        guard let encodedSecret = try queryValue(
+            AppConstants.Authenticator.OTPAuth.secretQueryName
+        ),
               !encodedSecret.isEmpty else {
             throw TOTPError.missingSecret
         }
         let secret = try Base32Codec.decode(encodedSecret)
 
-        if let queryIssuer = try queryValue("issuer") {
+        if let queryIssuer = try queryValue(AppConstants.Authenticator.OTPAuth.issuerQueryName) {
             issuer = queryIssuer
         }
         issuer = issuer.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -129,12 +133,15 @@ nonisolated struct TOTPEngine {
         guard !(issuer.isEmpty && account.isEmpty) else {
             throw TOTPError.missingAccount
         }
-        guard !issuer.contains(":"), !account.contains(":") else {
+        guard !issuer.contains(AppConstants.Authenticator.labelSeparator),
+              !account.contains(AppConstants.Authenticator.labelSeparator) else {
             throw TOTPError.invalidLabel
         }
 
-        var algorithm = TOTPAlgorithm.sha1
-        if let rawAlgorithm = try queryValue("algorithm") {
+        var algorithm = TOTPAlgorithm.sha256
+        if let rawAlgorithm = try queryValue(
+            AppConstants.Authenticator.OTPAuth.algorithmQueryName
+        ) {
             guard rawAlgorithm.allSatisfy({ $0.asciiValue != nil }),
                   let parsed = TOTPAlgorithm(rawValue: rawAlgorithm.uppercased()) else {
                 throw TOTPError.invalidAlgorithm
@@ -142,21 +149,22 @@ nonisolated struct TOTPEngine {
             algorithm = parsed
         }
 
-        var digits = 6
-        if let rawDigits = try queryValue("digits") {
+        var digits = AppConstants.Authenticator.defaultDigits
+        if let rawDigits = try queryValue(AppConstants.Authenticator.OTPAuth.digitsQueryName) {
             guard isASCIIDecimal(rawDigits),
                   let parsed = Int(rawDigits),
-                  (6 ... 8).contains(parsed) else {
+                  (AppConstants.Authenticator.minimumDigits ...
+                    AppConstants.Authenticator.maximumDigits).contains(parsed) else {
                 throw TOTPError.invalidDigits
             }
             digits = parsed
         }
 
-        var period = 30
-        if let rawPeriod = try queryValue("period") {
+        var period = AppConstants.Authenticator.defaultPeriod
+        if let rawPeriod = try queryValue(AppConstants.Authenticator.OTPAuth.periodQueryName) {
             guard isASCIIDecimal(rawPeriod),
                   let parsed = Int(rawPeriod),
-                  supportedPeriods.contains(parsed) else {
+                  AppConstants.Authenticator.supportedPeriods.contains(parsed) else {
                 throw TOTPError.invalidPeriod
             }
             period = parsed
@@ -173,7 +181,9 @@ nonisolated struct TOTPEngine {
     }
 
     private static func isASCIIDecimal(_ value: String) -> Bool {
-        !value.isEmpty && value.utf8.allSatisfy { (48 ... 57).contains($0) }
+        !value.isEmpty && value.allSatisfy {
+            $0.isASCII && $0.isNumber
+        }
     }
 
     // MARK: - Errors
@@ -192,23 +202,29 @@ nonisolated struct TOTPEngine {
         var errorDescription: String? {
             switch self {
             case .invalidURI:
-                "OTP Auth URI 无效"
+                AppConstants.Authenticator.OTPAuth.invalidURI
             case .missingSecret:
-                "URI 中缺少密钥"
+                AppConstants.Authenticator.OTPAuth.missingSecret
             case .missingAccount:
-                "URI 中缺少账户名称"
+                AppConstants.Authenticator.OTPAuth.missingAccount
             case .invalidLabel:
-                "服务名称和用户名不能包含冒号"
+                AppConstants.Authenticator.OTPAuth.invalidLabel
             case .invalidAlgorithm:
-                "OTP Auth URI 的算法无效"
+                AppConstants.Authenticator.OTPAuth.invalidAlgorithm
             case .invalidDigits:
-                "OTP Auth URI 的位数必须为 6 到 8"
+                AppConstants.Authenticator.OTPAuth.invalidDigits
             case .invalidPeriod:
-                "OTP Auth URI 的周期必须为 15、30、45 或 60 秒"
+                AppConstants.Authenticator.OTPAuth.invalidPeriod
             case let .duplicateParameter(name):
-                "OTP Auth URI 包含重复参数: \"\(name)\""
+                String(
+                    format: AppConstants.Authenticator.OTPAuth.duplicateParameterFormat,
+                    name
+                )
             case let .invalidParameter(name):
-                "OTP Auth URI 参数缺少值: \"\(name)\""
+                String(
+                    format: AppConstants.Authenticator.OTPAuth.missingParameterValueFormat,
+                    name
+                )
             }
         }
     }

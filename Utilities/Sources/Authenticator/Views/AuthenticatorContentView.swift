@@ -13,13 +13,13 @@ struct AuthenticatorContentView: View {
             if let initializationError = appState.initializationError {
                 ContentUnavailableView {
                     Label(
-                        "身份验证器不可用",
+                        AppConstants.Authenticator.Unlock.unavailable,
                         systemImage: "exclamationmark.triangle"
                     )
                 } description: {
                     Text(initializationError)
                 } actions: {
-                    Button("重试") { appState.initialize() }
+                    Button(AppConstants.Authenticator.Unlock.retry) { appState.initialize() }
                 }
             } else if appState.isUnlocked {
                 TOTPListView()
@@ -32,11 +32,22 @@ struct AuthenticatorContentView: View {
         .overlay {
             if isUnlocking {
                 ZStack {
-                    Rectangle().fill(.black.opacity(0.22)).ignoresSafeArea()
-                    ProgressView(appState.isConfigured ? "正在解锁…" : "正在创建加密存储…")
+                    Rectangle()
+                        .fill(.black.opacity(AppConstants.Authenticator.Unlock.overlayOpacity))
+                        .ignoresSafeArea()
+                    ProgressView(
+                        appState.isConfigured
+                            ? AppConstants.Authenticator.Unlock.unlocking
+                            : AppConstants.Authenticator.Unlock.creatingStore
+                    )
                         .controlSize(.large)
-                        .padding(24)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(AppConstants.Authenticator.Unlock.progressPadding)
+                        .background(
+                            .regularMaterial,
+                            in: RoundedRectangle(
+                                cornerRadius: AppConstants.Authenticator.Unlock.progressCornerRadius
+                            )
+                        )
                 }
                 .allowsHitTesting(true)
             }
@@ -44,31 +55,38 @@ struct AuthenticatorContentView: View {
     }
 
     private var unlockView: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: AppConstants.Authenticator.Unlock.contentSpacing) {
             Image(systemName: "lock.shield")
-                .font(.system(size: 46))
+                .font(.system(size: AppConstants.Authenticator.Unlock.lockSymbolSize))
                 .foregroundStyle(.cyan)
 
-            VStack(spacing: 6) {
-                Text(appState.isConfigured ? "解锁身份验证器" : "设置身份验证器密钥")
+            VStack(spacing: AppConstants.Authenticator.Unlock.titleSpacing) {
+                Text(
+                    appState.isConfigured
+                        ? AppConstants.Authenticator.Unlock.unlockTitle
+                        : AppConstants.Authenticator.Unlock.setupTitle
+                )
                     .font(.title2.bold())
                 Text(
                     appState.isConfigured
-                        ? "密钥仅保留在内存中，关闭功能后需要重新输入。"
-                        : "数据将使用 AES-256-GCM 加密。密钥遗失后无法恢复。"
+                        ? AppConstants.Authenticator.Unlock.configuredDescription
+                        : AppConstants.Authenticator.Unlock.setupDescription
                 )
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             }
 
-            VStack(spacing: 12) {
-                SecureField("输入密钥", text: $userKey)
+            VStack(spacing: AppConstants.Authenticator.Unlock.fieldsSpacing) {
+                SecureField(AppConstants.Authenticator.Unlock.keyPrompt, text: $userKey)
                     .textFieldStyle(.roundedBorder)
                     .onSubmit(beginUnlock)
 
                 if !appState.isConfigured {
-                    SecureField("再次输入密钥", text: $keyConfirmation)
+                    SecureField(
+                        AppConstants.Authenticator.Unlock.confirmationPrompt,
+                        text: $keyConfirmation
+                    )
                         .textFieldStyle(.roundedBorder)
                         .onSubmit(beginUnlock)
                 }
@@ -81,7 +99,12 @@ struct AuthenticatorContentView: View {
                     .multilineTextAlignment(.center)
             }
 
-            Button(appState.isConfigured ? "解锁" : "创建并启动", action: beginUnlock)
+            Button(
+                appState.isConfigured
+                    ? AppConstants.Authenticator.Unlock.unlock
+                    : AppConstants.Authenticator.Unlock.createAndLaunch,
+                action: beginUnlock
+            )
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(
@@ -89,13 +112,13 @@ struct AuthenticatorContentView: View {
                         || (!appState.isConfigured && keyConfirmation.isEmpty)
                 )
         }
-        .frame(maxWidth: 320)
-        .padding(36)
+        .frame(maxWidth: AppConstants.Authenticator.Unlock.maximumContentWidth)
+        .padding(AppConstants.Authenticator.Unlock.contentPadding)
     }
 
     private func beginUnlock() {
         if !appState.isConfigured && userKey != keyConfirmation {
-            errorMessage = "两次输入的密钥不一致"
+            errorMessage = AppConstants.Authenticator.Unlock.mismatchedKeys
             return
         }
 

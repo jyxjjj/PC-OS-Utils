@@ -1,7 +1,7 @@
 import Foundation
 
 nonisolated enum Base32Codec {
-    private static let alphabet = Array("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567")
+    private static let alphabet = Array(AppConstants.Authenticator.Base32.alphabet)
     private static let values = Dictionary(
         uniqueKeysWithValues: alphabet.enumerated().map { ($0.element, $0.offset) }
     )
@@ -16,10 +16,12 @@ nonisolated enum Base32Codec {
 
         let payload: Substring
         let paddingCount: Int
-        if let paddingStart = cleaned.firstIndex(of: "=") {
+        if let paddingStart = cleaned.firstIndex(of: AppConstants.Authenticator.Base32.padding) {
             payload = cleaned[..<paddingStart]
             let padding = cleaned[paddingStart...]
-            guard padding.allSatisfy({ $0 == "=" }) else {
+            guard padding.allSatisfy({
+                $0 == AppConstants.Authenticator.Base32.padding
+            }) else {
                 throw Base32Error.invalidPadding
             }
             paddingCount = padding.count
@@ -100,17 +102,20 @@ nonisolated enum Base32Codec {
         var errorDescription: String? {
             switch self {
             case .empty:
-                "Base32 密钥不能为空"
+                AppConstants.Authenticator.Base32.emptySecret
             case let .invalidCharacter(character):
-                "无效的 Base32 字符: \"\(character)\""
+                String(
+                    format: AppConstants.Authenticator.Base32.invalidCharacterFormat,
+                    String(character)
+                )
             case .nonASCII:
-                "Base32 密钥只能包含 ASCII 字符"
+                AppConstants.Authenticator.Base32.nonASCII
             case .invalidLength:
-                "Base32 密钥长度无效"
+                AppConstants.Authenticator.Base32.invalidLength
             case .invalidPadding:
-                "Base32 填充格式无效"
+                AppConstants.Authenticator.Base32.invalidPadding
             case .nonZeroPaddingBits:
-                "Base32 密钥包含非零填充位"
+                AppConstants.Authenticator.Base32.nonZeroPaddingBits
             }
         }
     }

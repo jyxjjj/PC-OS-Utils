@@ -53,10 +53,6 @@ nonisolated private struct SetupResult: Sendable {
 }
 
 nonisolated private enum AuthenticatorCrypto {
-    private static let keySize = 32
-    private static let saltSize = 16
-    private static let derivationMilliseconds: UInt32 = 250
-
     static func setup(password: Data) throws -> SetupResult {
         let salt = randomSalt()
         let rounds = try calibratedRounds(passwordLength: password.count)
@@ -152,10 +148,10 @@ nonisolated private enum AuthenticatorCrypto {
         let rounds = CCCalibratePBKDF(
             CCPBKDFAlgorithm(kCCPBKDF2),
             passwordLength,
-            saltSize,
+            AppConstants.Authenticator.Store.saltSize,
             CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256),
-            keySize,
-            derivationMilliseconds
+            AppConstants.Authenticator.Store.keySize,
+            AppConstants.Authenticator.Store.derivationMilliseconds
         )
         guard rounds != UInt32.max else {
             throw AuthenticatorStoreError.keyDerivationFailed
@@ -171,7 +167,10 @@ nonisolated private enum AuthenticatorCrypto {
         guard let roundCount = UInt32(exactly: rounds), roundCount > 0 else {
             throw AuthenticatorStoreError.invalidParameters
         }
-        var keyBytes = [UInt8](repeating: 0, count: keySize)
+        var keyBytes = [UInt8](
+            repeating: 0,
+            count: AppConstants.Authenticator.Store.keySize
+        )
         let status = password.withUnsafeBytes { passwordBytes in
             salt.withUnsafeBytes { saltBytes in
                 CCKeyDerivationPBKDF(
@@ -195,7 +194,9 @@ nonisolated private enum AuthenticatorCrypto {
 
     private static func randomSalt() -> Data {
         let randomKey = SymmetricKey(size: .bits256)
-        return randomKey.withUnsafeBytes { Data($0.prefix(saltSize)) }
+        return randomKey.withUnsafeBytes {
+            Data($0.prefix(AppConstants.Authenticator.Store.saltSize))
+        }
     }
 
     private static func seal(
@@ -443,7 +444,7 @@ final class AuthenticatorStore {
             EncryptedTOTPRecord.self,
         ])
         let configuration = ModelConfiguration(
-            "Authenticator",
+            AppConstants.Authenticator.Store.modelConfigurationName,
             schema: schema,
             groupContainer: .none,
             cloudKitDatabase: .none
@@ -469,16 +470,16 @@ nonisolated enum AuthenticatorStoreError: Error, LocalizedError, Sendable {
 
     var errorDescription: String? {
         switch self {
-        case .authenticationFailed: "密钥错误或加密数据已损坏"
-        case .duplicateEntries: "存在重复的身份验证器账户"
-        case .encryptionFailed: "无法加密身份验证器数据"
-        case .invalidOrder: "身份验证器账户顺序无效"
-        case .invalidParameters: "身份验证器加密参数无效"
-        case .invalidStore: "身份验证器存储数据无效"
-        case .keyDerivationFailed: "无法派生 AES-256 加密密钥"
-        case .emptyKey: "密钥不能为空"
-        case .locked: "身份验证器尚未解锁"
-        case .missingEntry: "找不到身份验证器账户"
+        case .authenticationFailed: AppConstants.Authenticator.Store.authenticationFailed
+        case .duplicateEntries: AppConstants.Authenticator.Store.duplicateEntries
+        case .encryptionFailed: AppConstants.Authenticator.Store.encryptionFailed
+        case .invalidOrder: AppConstants.Authenticator.Store.invalidOrder
+        case .invalidParameters: AppConstants.Authenticator.Store.invalidParameters
+        case .invalidStore: AppConstants.Authenticator.Store.invalidStore
+        case .keyDerivationFailed: AppConstants.Authenticator.Store.keyDerivationFailed
+        case .emptyKey: AppConstants.Authenticator.Store.emptyKey
+        case .locked: AppConstants.Authenticator.Store.locked
+        case .missingEntry: AppConstants.Authenticator.Store.missingEntry
         }
     }
 }
