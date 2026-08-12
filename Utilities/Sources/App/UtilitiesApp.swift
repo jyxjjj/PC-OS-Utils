@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 private struct SubTrackCommandContext {
@@ -81,6 +82,9 @@ private struct SubTrackRootView: View {
                     }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
+            ($0.object as! NSWindow).preventsApplicationTerminationWhenModal = false
+        }
         .onDisappear {
             openWindow(id: "launcher")
         }
@@ -94,6 +98,9 @@ private struct AuthenticatorRootView: View {
     var body: some View {
         AuthenticatorContentView()
             .environment(appState)
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
+                ($0.object as! NSWindow).preventsApplicationTerminationWhenModal = false
+            }
             .onDisappear {
                 appState.lock()
                 openWindow(id: "launcher")
