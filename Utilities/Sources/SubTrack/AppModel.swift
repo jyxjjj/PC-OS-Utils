@@ -5,16 +5,13 @@ import SwiftData
 enum PresentedSheet: Identifiable {
     enum ID: Hashable {
         case editor(PersistentIdentifier?)
-        case purchase(PersistentIdentifier)
     }
 
     case editor(Subscription?)
-    case purchase(Subscription)
 
     var id: ID {
         switch self {
         case let .editor(subscription): .editor(subscription?.persistentModelID)
-        case let .purchase(subscription): .purchase(subscription.persistentModelID)
         }
     }
 }
@@ -62,8 +59,12 @@ final class AppModel {
                 let item = view.subscription
                 if let priorityFilter, priorityFilter != item.priority { return false }
                 if keyword.isEmpty { return true }
-                let searchable = "\(item.name) \(item.category) \(item.channel) \(item.notes)"
-                    .localizedLowercase
+                let searchable = [
+                    item.name,
+                    item.category,
+                    item.channel,
+                    item.notes,
+                ].joined(separator: " ").localizedLowercase
                 return searchable.contains(keyword)
             }
     }
@@ -76,38 +77,17 @@ final class AppModel {
         guard let store else { throw SubTrackError.unavailable }
         if let subscription {
             try store.update(subscription, from: input)
-            notice = "项目已更新"
+            notice = AppConstants.SubTrack.State.updatedNotice
         } else {
             try store.insert(Subscription(input: input))
-            notice = "项目已创建"
+            notice = AppConstants.SubTrack.State.createdNotice
         }
     }
 
     func remove(_ subscription: Subscription) throws {
         guard let store else { throw SubTrackError.unavailable }
         try store.delete(subscription)
-        notice = "项目已删除"
-    }
-
-    func recordPurchase(
-        subscription: Subscription,
-        purchasedAt: Date,
-        price: Decimal,
-        extensionDays: Int,
-        channel: String,
-        notes: String
-    ) throws {
-        guard let store else { throw SubTrackError.unavailable }
-        let purchase = try SubTrackEngine.recordPurchase(
-            for: subscription,
-            purchasedAt: purchasedAt,
-            price: price,
-            extensionDays: extensionDays,
-            channel: channel,
-            notes: notes
-        )
-        try store.recordPurchase(for: subscription, purchase: purchase)
-        notice = "续费已记录"
+        notice = AppConstants.SubTrack.State.deletedNotice
     }
 
     func runDayChangeRefreshLoop() async {

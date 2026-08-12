@@ -16,11 +16,17 @@ struct SubTrackContentView: View {
                     .modelContainer(container)
             } else {
                 ContentUnavailableView {
-                    Label("无法载入数据", systemImage: "exclamationmark.triangle")
+                    Label(
+                        AppConstants.SubTrack.Content.loadFailed,
+                        systemImage: "exclamationmark.triangle"
+                    )
                 } description: {
-                    Text(model.initializationError ?? "无法创建 SubTrack 数据库")
+                    Text(
+                        model.initializationError
+                            ?? AppConstants.SubTrack.Content.createDatabaseFailed
+                    )
                 } actions: {
-                    Button("重试") { model.initializeStore() }
+                    Button(AppConstants.SubTrack.Content.retry) { model.initializeStore() }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -30,7 +36,11 @@ struct SubTrackContentView: View {
         }
         .task(id: model.notice) { @MainActor in
             guard !model.notice.isEmpty else { return }
-            do { try await Task.sleep(for: .milliseconds(3_500)) }
+            do {
+                try await Task.sleep(
+                    for: .milliseconds(AppConstants.SubTrack.Content.noticeMilliseconds)
+                )
+            }
             catch { return }
             model.notice = ""
         }
@@ -38,25 +48,29 @@ struct SubTrackContentView: View {
             switch sheet {
             case let .editor(subscription):
                 SubscriptionEditorView(subscription: subscription)
-            case let .purchase(subscription):
-                PurchaseView(subscription: subscription)
             }
         }
         .overlay(alignment: .bottom) {
             if !model.notice.isEmpty {
                 Text(model.notice)
                     .font(.callout.weight(.semibold))
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 11)
+                    .padding(.horizontal, AppConstants.SubTrack.Content.noticeHorizontalPadding)
+                    .padding(.vertical, AppConstants.SubTrack.Content.noticeVerticalPadding)
                     .foregroundStyle(.primary)
                     .background(.regularMaterial)
                     .clipShape(Capsule())
-                    .shadow(radius: 8, y: 3)
-                    .padding(.bottom, 18)
+                    .shadow(
+                        radius: AppConstants.SubTrack.Content.noticeShadowRadius,
+                        y: AppConstants.SubTrack.Content.noticeShadowY
+                    )
+                    .padding(.bottom, AppConstants.SubTrack.Content.noticeBottomPadding)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeOut(duration: 0.2), value: model.notice)
+        .animation(
+            .easeOut(duration: AppConstants.SubTrack.Content.noticeAnimationDuration),
+            value: model.notice
+        )
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 model.refreshForForeground()
@@ -65,7 +79,7 @@ struct SubTrackContentView: View {
     }
 }
 
-// 首页仪表盘：汇总、项目列表、提醒和支出预测。
+// 首页仪表盘: 汇总、项目列表、提醒和支出预测。
 private struct DashboardView: View {
     @Environment(AppModel.self) private var model
     @Query(sort: \Subscription.expiresAt) private var subscriptions: [Subscription]
@@ -90,34 +104,37 @@ private struct DashboardView: View {
         }
 
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.sectionSpacing) {
                 metrics(
                     active: statusCounts.active,
                     due: statusCounts.dueSoon,
                     expired: statusCounts.expired,
                     forecast: forecast
                 )
-                HStack(alignment: .top, spacing: 18) {
+                HStack(alignment: .top, spacing: AppConstants.SubTrack.Content.sectionSpacing) {
                     ProjectsPane(views: allViews)
                         .frame(maxWidth: .infinity, alignment: .top)
-                    VStack(spacing: 18) {
+                    VStack(spacing: AppConstants.SubTrack.Content.sectionSpacing) {
                         ReminderCard(views: allViews)
                         ForecastCard(forecast: forecast)
                     }
-                    .frame(width: 350)
+                    .frame(width: AppConstants.SubTrack.Content.sidebarWidth)
                 }
             }
-            .padding(22)
-            .frame(maxWidth: 1480)
+            .padding(AppConstants.SubTrack.Content.contentPadding)
+            .frame(maxWidth: AppConstants.SubTrack.Content.maximumContentWidth)
             .frame(maxWidth: .infinity)
         }
-        .navigationTitle("SubTrack")
+        .navigationTitle(AppConstants.SubTrack.Content.title)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     model.presentedSheet = .editor(nil)
                 } label: {
-                    Label("新建项目", systemImage: "plus")
+                    Label(
+                        AppConstants.SubTrack.Content.newProject,
+                        systemImage: "plus"
+                    )
                 }
             }
         }
@@ -129,16 +146,41 @@ private struct DashboardView: View {
         expired: Int,
         forecast: ForecastSummary
     ) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 14)], spacing: 14) {
-            MetricCard(title: "有效项目", value: "\(active)", note: "当前无需处理", color: .green)
-            MetricCard(title: "即将到期", value: "\(due)", note: "已进入提醒窗口", color: .orange)
-            MetricCard(title: "已到期", value: "\(expired)", note: "需要续费或删除", color: .red)
+        LazyVGrid(
+            columns: [
+                GridItem(
+                    .adaptive(minimum: AppConstants.SubTrack.Content.metricMinimumWidth),
+                    spacing: AppConstants.SubTrack.Content.metricGridSpacing
+                ),
+            ],
+            spacing: AppConstants.SubTrack.Content.metricGridSpacing
+        ) {
             MetricCard(
-                title: "未来 90 天",
+                title: AppConstants.SubTrack.Content.activeProjects,
+                value: String(active),
+                note: AppConstants.SubTrack.Content.activeProjectsNote,
+                color: .green
+            )
+            MetricCard(
+                title: AppConstants.SubTrack.Content.dueSoonProjects,
+                value: String(due),
+                note: AppConstants.SubTrack.Content.dueSoonProjectsNote,
+                color: .orange
+            )
+            MetricCard(
+                title: AppConstants.SubTrack.Content.expiredProjects,
+                value: String(expired),
+                note: AppConstants.SubTrack.Content.expiredProjectsNote,
+                color: .red
+            )
+            MetricCard(
+                title: AppConstants.SubTrack.Content.next90Days,
                 value: forecast.next90Days.isEmpty
-                    ? "暂无支出"
-                    : forecast.next90Days.map { $0.total.money(currency: $0.currency) }.joined(separator: " · "),
-                note: "按币种独立汇总",
+                    ? AppConstants.SubTrack.Content.noExpenses
+                    : forecast.next90Days.map {
+                        $0.total.money(currency: $0.currency)
+                    }.joined(separator: AppConstants.Common.itemSeparator),
+                note: AppConstants.SubTrack.Content.totalsByCurrency,
                 color: .blue,
                 dark: true
             )
@@ -153,9 +195,13 @@ private struct ProjectsPane: View {
     var body: some View {
         @Bindable var model = model
         projects(model.filteredViews(from: views))
-            .searchable(text: $model.query, prompt: "搜索名称、分类、渠道或备注")
+            .searchable(
+                text: $model.query,
+                prompt: AppConstants.SubTrack.Content.searchPrompt
+            )
             .searchScopes($model.priorityFilter) {
-                Text("全部优先级").tag(nil as SubscriptionPriority?)
+                Text(AppConstants.SubTrack.Content.allPriorities)
+                    .tag(nil as SubscriptionPriority?)
                 ForEach(SubscriptionPriority.allCases) { priority in
                     Text(priority.localizedName).tag(priority as SubscriptionPriority?)
                 }
@@ -163,10 +209,21 @@ private struct ProjectsPane: View {
     }
 
     private func projects(_ filteredViews: [SubscriptionView]) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("订阅项目").font(.title3.bold())
-                Text("按到期日排序 · \(filteredViews.count) 个结果")
+        VStack(
+            alignment: .leading,
+            spacing: AppConstants.SubTrack.Content.projectsContentSpacing
+        ) {
+            VStack(
+                alignment: .leading,
+                spacing: AppConstants.SubTrack.Content.projectTitleSpacing
+            ) {
+                Text(AppConstants.SubTrack.Content.subscriptions).font(.title3.bold())
+                Text(
+                    String(
+                        format: AppConstants.SubTrack.Content.sortedResultFormat,
+                        filteredViews.count
+                    )
+                )
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -175,11 +232,14 @@ private struct ProjectsPane: View {
                 Group {
                     if views.isEmpty {
                         ContentUnavailableView {
-                            Label("还没有项目", systemImage: "rectangle.stack")
+                            Label(
+                                AppConstants.SubTrack.Content.noProjects,
+                                systemImage: "rectangle.stack"
+                            )
                         } description: {
-                            Text("创建项目后，可在这里查看到期日期和续费预测。")
+                            Text(AppConstants.SubTrack.Content.noProjectsDescription)
                         } actions: {
-                            Button("创建项目") {
+                            Button(AppConstants.SubTrack.Content.createProject) {
                                 model.presentedSheet = .editor(nil)
                             }
                         }
@@ -187,20 +247,26 @@ private struct ProjectsPane: View {
                         ContentUnavailableView.search(text: model.query)
                     } else {
                         ContentUnavailableView {
-                            Label("没有符合条件的项目", systemImage: "line.3.horizontal.decrease.circle")
+                            Label(
+                                AppConstants.SubTrack.Content.noMatches,
+                                systemImage: "line.3.horizontal.decrease.circle"
+                            )
                         } description: {
-                            Text("当前优先级范围内没有项目。")
+                            Text(AppConstants.SubTrack.Content.noMatchesDescription)
                         } actions: {
-                            Button("清除筛选") {
+                            Button(AppConstants.SubTrack.Content.clearFilter) {
                                 model.query = ""
                                 model.priorityFilter = nil
                             }
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, minHeight: 220)
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: AppConstants.SubTrack.Content.emptyMinimumHeight
+                )
             } else {
-                LazyVStack(spacing: 10) {
+                LazyVStack(spacing: AppConstants.SubTrack.Content.rowSpacing) {
                     ForEach(filteredViews) { SubscriptionRow(view: $0) }
                 }
             }
@@ -210,7 +276,11 @@ private struct ProjectsPane: View {
 }
 
 private struct MetricCard: View {
-    private static let forecastBanner = Color(red: 24 / 255, green: 58 / 255, blue: 122 / 255)
+    private static let forecastBanner = Color(
+        red: 24 / 255,
+        green: 58 / 255,
+        blue: 122 / 255
+    )
 
     let title: String
     let value: String
@@ -219,19 +289,33 @@ private struct MetricCard: View {
     var dark = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.caption.weight(.semibold)).opacity(0.8)
+        VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.metricCardSpacing) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .opacity(AppConstants.SubTrack.Content.metricTitleOpacity)
             Text(value)
                 .font(.title2.bold())
-                .lineLimit(2)
-                .minimumScaleFactor(0.68)
-            Text(note).font(.caption).opacity(0.72)
+                .lineLimit(AppConstants.SubTrack.Content.metricLineLimit)
+                .minimumScaleFactor(AppConstants.SubTrack.Content.metricMinimumScale)
+            Text(note)
+                .font(.caption)
+                .opacity(AppConstants.SubTrack.Content.metricNoteOpacity)
         }
-        .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
-        .padding(16)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: AppConstants.SubTrack.Content.metricMinimumHeight,
+            alignment: .leading
+        )
+        .padding(AppConstants.SubTrack.Content.metricPadding)
         .foregroundStyle(dark ? .white : .primary)
-        .background(dark ? Self.forecastBanner : color.opacity(0.11))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(
+            dark
+                ? Self.forecastBanner
+                : color.opacity(AppConstants.SubTrack.Content.metricBackgroundOpacity)
+        )
+        .clipShape(
+            RoundedRectangle(cornerRadius: AppConstants.SubTrack.Content.metricCornerRadius)
+        )
     }
 }
 
@@ -244,33 +328,65 @@ private struct SubscriptionRow: View {
     private var item: Subscription { view.subscription }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: AppConstants.SubTrack.Content.subscriptionRowSpacing) {
             NavigationLink {
                 SubscriptionDetailView(subscription: item)
             } label: {
-                HStack(spacing: 14) {
+                HStack(spacing: AppConstants.SubTrack.Content.subscriptionRowSpacing) {
                     Text(String(item.name.prefix(1)).uppercased())
                         .font(.headline.bold())
-                        .frame(width: 38, height: 38)
+                        .frame(
+                            width: AppConstants.SubTrack.Content.rowIconSize,
+                            height: AppConstants.SubTrack.Content.rowIconSize
+                        )
                         .foregroundStyle(Color.accentColor)
-                        .background(Color.accentColor.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 9))
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 7) {
+                        .background(
+                            Color.accentColor.opacity(AppConstants.SubTrack.Content.rowIconOpacity)
+                        )
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: AppConstants.SubTrack.Content.rowIconCornerRadius
+                            )
+                        )
+                    VStack(
+                        alignment: .leading,
+                        spacing: AppConstants.SubTrack.Content.rowTitleSpacing
+                    ) {
+                        HStack(spacing: AppConstants.SubTrack.Content.prioritySpacing) {
                             Text(item.name).font(.headline)
                             Text(item.priority.localizedName)
                                 .font(.caption2.weight(.bold))
-                                .padding(.horizontal, 6).padding(.vertical, 3)
+                                .padding(
+                                    .horizontal,
+                                    AppConstants.SubTrack.Content.priorityHorizontalPadding
+                                )
+                                .padding(
+                                    .vertical,
+                                    AppConstants.SubTrack.Content.priorityVerticalPadding
+                                )
                                 .background(.quaternary)
                                 .clipShape(Capsule())
                         }
-                        Text("\(item.category) · \(item.expiresAt.localizedDate) · \(remainingText)")
+                        Text(
+                            String(
+                                format: AppConstants.SubTrack.Content.projectMetadataFormat,
+                                item.category,
+                                item.expiresAt.localizedDate,
+                                remainingText
+                            )
+                        )
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text(SubscriptionRules.decisionPrice(for: item)?.money(currency: item.currency) ?? "—")
+                    VStack(
+                        alignment: .trailing,
+                        spacing: AppConstants.SubTrack.Content.priceSpacing
+                    ) {
+                        Text(
+                            SubscriptionRules.decisionPrice(for: item)?
+                                .money(currency: item.currency) ?? AppConstants.Common.emDash
+                        )
                             .font(.headline)
                         Text(SubscriptionRules.decisionPriceKind(for: item))
                             .font(.caption2).foregroundStyle(.secondary)
@@ -278,8 +394,17 @@ private struct SubscriptionRow: View {
                     Text(view.status.localizedName)
                         .font(.caption.weight(.bold))
                         .foregroundStyle(view.status.color)
-                        .padding(.horizontal, 8).padding(.vertical, 5)
-                        .background(view.status.color.opacity(0.12))
+                        .padding(
+                            .horizontal,
+                            AppConstants.SubTrack.Content.statusHorizontalPadding
+                        )
+                        .padding(
+                            .vertical,
+                            AppConstants.SubTrack.Content.statusVerticalPadding
+                        )
+                        .background(
+                            view.status.color.opacity(AppConstants.SubTrack.Content.statusOpacity)
+                        )
                         .clipShape(Capsule())
                 }
                 .contentShape(Rectangle())
@@ -287,40 +412,67 @@ private struct SubscriptionRow: View {
             .buttonStyle(.plain)
 
             Menu {
-                Button("记录续费", systemImage: "cart") {
-                    model.presentedSheet = .purchase(item)
-                }
-                Divider()
-                Button("编辑", systemImage: "pencil") {
+                Button(
+                    AppConstants.Common.edit,
+                    systemImage: "pencil"
+                ) {
                     model.presentedSheet = .editor(item)
                 }
-                Button("删除", systemImage: "trash", role: .destructive) {
+                Button(
+                    AppConstants.Common.delete,
+                    systemImage: "trash",
+                    role: .destructive
+                ) {
                     confirmDelete = true
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
                     .font(.title3)
-                    .frame(width: 32, height: 32)
+                    .frame(
+                        width: AppConstants.SubTrack.Content.menuSize,
+                        height: AppConstants.SubTrack.Content.menuSize
+                    )
             }
             .menuStyle(.borderlessButton)
         }
-        .padding(12)
+        .padding(AppConstants.SubTrack.Content.rowPadding)
         .background(.background)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(.quaternary))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .alert("删除 \"\(item.name)\"？", isPresented: $confirmDelete) {
-            Button("取消", role: .cancel) {}
-            Button("删除项目与全部历史", role: .destructive) {
+        .overlay(
+            RoundedRectangle(cornerRadius: AppConstants.SubTrack.Content.rowCornerRadius)
+                .stroke(.quaternary)
+        )
+        .clipShape(
+            RoundedRectangle(cornerRadius: AppConstants.SubTrack.Content.rowCornerRadius)
+        )
+        .alert(
+            String(format: AppConstants.SubTrack.Content.deleteTitleFormat, item.name),
+            isPresented: $confirmDelete
+        ) {
+            Button(AppConstants.Common.cancel, role: .cancel) {}
+            Button(AppConstants.SubTrack.Content.deleteProject, role: .destructive) {
                 do { try model.remove(item) }
-                catch { model.notice = "删除失败：\(error.localizedDescription)" }
+                catch {
+                    model.notice = String(
+                        format: AppConstants.SubTrack.Content.deleteFailedFormat,
+                        error.localizedDescription
+                    )
+                }
             }
         } message: {
-            Text("续费记录也会删除，此操作无法撤销。")
+            Text(AppConstants.SubTrack.Content.deleteDescription)
         }
     }
 
     private var remainingText: String {
-        view.status == .expired ? "过期 \(-view.daysRemaining) 天" : "剩余 \(view.daysRemaining) 天"
+        view.status == .expired
+            ? String(
+                format: AppConstants.SubTrack.Content.expiredDaysFormat,
+                -view.daysRemaining
+            )
+            : String(
+                format: AppConstants.SubTrack.Content.remainingDaysFormat,
+                view.daysRemaining
+            )
     }
 }
 
@@ -332,20 +484,37 @@ private struct ReminderCard: View {
         let reminders = views
             .filter { $0.status != .active }
 
-        VStack(alignment: .leading, spacing: 12) {
-            Text("提醒").font(.headline)
+        VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.reminderCardSpacing) {
+            Text(AppConstants.SubTrack.Content.reminders).font(.headline)
             if reminders.isEmpty {
-                Text("暂无提醒").foregroundStyle(.secondary)
+                Text(AppConstants.SubTrack.Content.noReminders).foregroundStyle(.secondary)
             } else {
                 ForEach(reminders) { view in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(view.status == .expired
-                            ? "\(view.subscription.name) 已到期"
-                            : "\(view.subscription.name) 即将到期")
+                    VStack(
+                        alignment: .leading,
+                        spacing: AppConstants.SubTrack.Content.rowTitleSpacing
+                    ) {
+                        Text(
+                            String(
+                                format: view.status == .expired
+                                    ? AppConstants.SubTrack.Content.expiredTitleFormat
+                                    : AppConstants.SubTrack.Content.dueSoonTitleFormat,
+                                view.subscription.name
+                            )
+                        )
                             .font(.caption.weight(.bold))
-                        Text(view.status == .expired
-                            ? "已过期 \(-view.daysRemaining) 天，请续费或删除项目。"
-                            : "还剩 \(view.daysRemaining) 天，到期日为 \(view.subscription.expiresAt.localizedDate)。")
+                        Text(
+                            view.status == .expired
+                                ? String(
+                                    format: AppConstants.SubTrack.Content.overdueDescriptionFormat,
+                                    -view.daysRemaining
+                                )
+                                : String(
+                                    format: AppConstants.SubTrack.Content.dueSoonDescriptionFormat,
+                                    view.daysRemaining,
+                                    view.subscription.expiresAt.localizedDate
+                                )
+                        )
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -365,33 +534,47 @@ private struct ForecastCard: View {
     var body: some View {
         let hasTotals = forecast.buckets.contains { !$0.totals.isEmpty }
 
-        VStack(alignment: .leading, spacing: 12) {
-            Text("未来 6 个月").font(.headline)
+        VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.forecastCardSpacing) {
+            Text(AppConstants.SubTrack.Content.nextSixMonths).font(.headline)
             if !hasTotals {
-                Text("暂无可预测支出")
+                Text(AppConstants.SubTrack.Content.noForecast)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 120)
+                    .frame(
+                        maxWidth: .infinity,
+                        minHeight: AppConstants.SubTrack.Content.forecastEmptyMinimumHeight
+                    )
             } else {
                 Chart {
                     ForEach(forecast.buckets) { bucket in
                         ForEach(bucket.totals) { total in
                             BarMark(
-                                x: .value("月份", bucket.month),
-                                y: .value("金额", total.total.doubleValue)
+                                x: .value(
+                                    AppConstants.SubTrack.Content.chartMonth,
+                                    bucket.month
+                                ),
+                                y: .value(
+                                    AppConstants.SubTrack.Content.chartAmount,
+                                    total.total.doubleValue
+                                )
                             )
-                            .foregroundStyle(by: .value("币种", total.currency))
+                            .foregroundStyle(
+                                by: .value(
+                                    AppConstants.SubTrack.Content.chartCurrency,
+                                    total.currency
+                                )
+                            )
                         }
                     }
                 }
-                .frame(height: 160)
+                .frame(height: AppConstants.SubTrack.Content.chartHeight)
             }
             ForEach(forecast.buckets) { bucket in
                 HStack {
                     Text(bucket.month).font(.caption.monospacedDigit())
                     Spacer()
-                    Text(bucket.totals.isEmpty ? "—" : bucket.totals.map {
+                    Text(bucket.totals.isEmpty ? AppConstants.Common.emDash : bucket.totals.map {
                         $0.total.money(currency: $0.currency)
-                    }.joined(separator: " · "))
+                    }.joined(separator: AppConstants.Common.itemSeparator))
                     .font(.caption.weight(.semibold))
                 }
             }

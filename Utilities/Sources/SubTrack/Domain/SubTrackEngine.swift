@@ -8,13 +8,13 @@ enum SubTrackError: LocalizedError, Sendable {
     var errorDescription: String? {
         switch self {
         case let .invalidInput(message): message
-        case .unavailable: "SubTrack 数据库不可用"
+        case .unavailable: AppConstants.SubTrack.databaseUnavailable
         }
     }
 }
 
 extension Decimal {
-    func rounded(scale: Int = 2) -> Decimal {
+    func rounded(scale: Int = AppConstants.SubTrack.Rules.decimalScale) -> Decimal {
         var source = self
         var result = Decimal()
         NSDecimalRound(&result, &source, scale, .plain)
@@ -26,8 +26,6 @@ extension Decimal {
 
 // 输入校验、到期状态和参考价格规则。
 enum SubscriptionRules {
-    static let allowedCurrencies = ["CNY", "EUR", "SGD", "TWD", "HKD", "USD", "JPY"]
-
     // 清理用户输入，并检查长度、范围和币种。
     static func validate(_ raw: SubscriptionInput) throws -> SubscriptionInput {
         var input = raw
@@ -37,29 +35,39 @@ enum SubscriptionRules {
         input.channel = input.channel.trimmingCharacters(in: .whitespacesAndNewlines)
         input.notes = input.notes.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        guard !input.name.isEmpty, input.name.count <= 120 else {
-            throw SubTrackError.invalidInput("名称不能为空且不能超过 120 个字符")
+        guard !input.name.isEmpty,
+              input.name.count <= AppConstants.SubTrack.Rules.maximumNameLength else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidName)
         }
-        guard !input.category.isEmpty, input.category.count <= 80 else {
-            throw SubTrackError.invalidInput("分类不能为空且不能超过 80 个字符")
+        guard !input.category.isEmpty,
+              input.category.count <= AppConstants.SubTrack.Rules.maximumCategoryLength else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidCategory)
         }
-        guard input.channel.count <= 120 else {
-            throw SubTrackError.invalidInput("购买渠道不能超过 120 个字符")
+        guard input.channel.count <= AppConstants.SubTrack.Rules.maximumChannelLength else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidChannel)
         }
-        guard input.notes.count <= 3_000 else {
-            throw SubTrackError.invalidInput("备注不能超过 3000 个字符")
+        guard input.notes.count <= AppConstants.SubTrack.Rules.maximumNotesLength else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidNotes)
         }
-        guard allowedCurrencies.contains(input.currency) else {
-            throw SubTrackError.invalidInput("请选择支持的币种")
+        guard AppConstants.SubTrack.currencyCodes.contains(input.currency) else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.unsupportedCurrency)
         }
-        guard (1 ... 36_500).contains(input.extensionDays) else {
-            throw SubTrackError.invalidInput("有效期需介于 1 和 36500 天之间")
+        guard (AppConstants.SubTrack.Rules.minimumExtensionDays ...
+               AppConstants.SubTrack.Rules.maximumExtensionDays).contains(input.extensionDays) else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidExtensionDays)
         }
-        guard (0 ... 3_650).contains(input.reminderDays) else {
-            throw SubTrackError.invalidInput("提醒天数需介于 0 和 3650 天之间")
+        guard (AppConstants.SubTrack.Rules.minimumReminderDays ...
+               AppConstants.SubTrack.Rules.maximumReminderDays).contains(input.reminderDays) else {
+            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidReminderDays)
         }
-        try validateMoney(input.officialPrice, label: "官方价格")
-        try validateMoney(input.thirdPartyReference, label: "第三方价格")
+        try validateMoney(
+            input.officialPrice,
+            label: AppConstants.SubTrack.Rules.officialPrice
+        )
+        try validateMoney(
+            input.thirdPartyReference,
+            label: AppConstants.SubTrack.Rules.thirdPartyPrice
+        )
         return input
     }
 
@@ -72,7 +80,7 @@ enum SubscriptionRules {
         let start = calendar.startOfDay(for: now)
         let expiryDay = calendar.startOfDay(for: subscription.expiresAt)
         guard let days = calendar.dateComponents([.day], from: start, to: expiryDay).day else {
-            preconditionFailure("两个有效日期无法计算日数")
+            preconditionFailure(AppConstants.SubTrack.Rules.invalidDateCalculation)
         }
 
         let status: SubscriptionStatus = if expiryDay < start {
@@ -89,96 +97,73 @@ enum SubscriptionRules {
     static func decisionPrice(for subscription: Subscription) -> Decimal? {
         let official = subscription.officialPrice
         let thirdParty = subscription.thirdPartyReference
-        if official > 0, thirdParty > 0 { return min(official, thirdParty) }
-        if official > 0 { return official }
-        if thirdParty > 0 { return thirdParty }
+        if official > AppConstants.SubTrack.Rules.minimumMoney,
+           thirdParty > AppConstants.SubTrack.Rules.minimumMoney {
+            return min(official, thirdParty)
+        }
+        if official > AppConstants.SubTrack.Rules.minimumMoney { return official }
+        if thirdParty > AppConstants.SubTrack.Rules.minimumMoney { return thirdParty }
         return nil
     }
 
     static func decisionPriceKind(for subscription: Subscription) -> String {
-        if subscription.officialPrice > 0, subscription.thirdPartyReference > 0 {
-            return "官方 / 第三方较低值"
+        if subscription.officialPrice > AppConstants.SubTrack.Rules.minimumMoney,
+           subscription.thirdPartyReference > AppConstants.SubTrack.Rules.minimumMoney {
+            return AppConstants.SubTrack.Rules.lowerPriceKind
         }
-        if subscription.thirdPartyReference > 0 { return "第三方参考价" }
-        if subscription.officialPrice > 0 { return "官方价格" }
-        return "尚未设置价格"
+        if subscription.thirdPartyReference > AppConstants.SubTrack.Rules.minimumMoney {
+            return AppConstants.SubTrack.Rules.thirdPartyReferenceKind
+        }
+        if subscription.officialPrice > AppConstants.SubTrack.Rules.minimumMoney {
+            return AppConstants.SubTrack.Rules.officialPriceKind
+        }
+        return AppConstants.SubTrack.Rules.unsetPriceKind
     }
 
     private static func validateMoney(_ value: Decimal, label: String) throws {
-        guard value >= 0, value <= 1_000_000_000 else {
-            throw SubTrackError.invalidInput("\(label)需介于 0 和 1000000000 之间")
+        guard value >= AppConstants.SubTrack.Rules.minimumMoney,
+              value <= AppConstants.SubTrack.Rules.maximumMoney else {
+            throw SubTrackError.invalidInput(
+                String(format: AppConstants.SubTrack.Rules.invalidMoneyFormat, label)
+            )
         }
     }
 }
 
 enum SubTrackEngine {
-    static func recordPurchase(
-        for subscription: Subscription,
-        purchasedAt: Date,
-        price: Decimal,
-        extensionDays: Int,
-        channel: String,
-        notes: String,
-        calendar: Calendar = .current,
-        now: Date = Date()
-    ) throws -> PurchaseRecord {
-        let purchaseDay = calendar.startOfDay(for: purchasedAt)
-        let today = calendar.startOfDay(for: now)
-        guard price >= 0, price <= 1_000_000_000 else {
-            throw SubTrackError.invalidInput("实付价格需介于 0 和 1000000000 之间")
-        }
-        guard purchaseDay <= today else {
-            throw SubTrackError.invalidInput("购买日期不能晚于今天")
-        }
-        guard (1 ... 36_500).contains(extensionDays) else {
-            throw SubTrackError.invalidInput("增加有效期需介于 1 和 36500 天之间")
-        }
-        let trimmedChannel = channel.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmedChannel.count <= 120, trimmedNotes.count <= 3_000 else {
-            throw SubTrackError.invalidInput("购买渠道或备注过长")
-        }
-
-        // 未到期就从原到期日续，已到期则从购买日期续。
-        let expiryDay = calendar.startOfDay(for: subscription.expiresAt)
-        guard let newExpiry = calendar.date(
-            byAdding: .day,
-            value: extensionDays,
-            to: max(expiryDay, purchaseDay)
-        ) else {
-            throw SubTrackError.invalidInput("续期后的到期时间超出支持范围")
-        }
-        let purchaseChannel = trimmedChannel.isEmpty
-            ? subscription.channel
-            : trimmedChannel
-
-        return PurchaseRecord(
-            purchasedAt: purchaseDay,
-            price: price,
-            currency: subscription.currency,
-            channel: purchaseChannel,
-            extensionDays: extensionDays,
-            newExpiry: newExpiry,
-            notes: trimmedNotes
-        )
-    }
-
     // 按续费周期推算未来支出，并按币种分别汇总。
     static func forecast(
         subscriptions: [Subscription],
-        months: Int = 6,
+        months: Int = AppConstants.SubTrack.Rules.defaultForecastMonths,
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> ForecastSummary {
-        let monthCount = min(max(months, 1), 24)
+        let monthCount = min(
+            max(months, AppConstants.SubTrack.Rules.minimumForecastMonths),
+            AppConstants.SubTrack.Rules.maximumForecastMonths
+        )
         let today = calendar.startOfDay(for: now)
         let current = calendar.dateComponents([.year, .month], from: today)
         guard let startYear = current.year,
               let startMonth = current.month,
-              let start = calendar.date(from: DateComponents(year: startYear, month: startMonth, day: 1)),
+              let start = calendar.date(
+                from: DateComponents(
+                    year: startYear,
+                    month: startMonth,
+                    day: AppConstants.SubTrack.Rules.firstDayOfMonth
+                )
+              ),
               let end = calendar.date(byAdding: .month, value: monthCount, to: start),
-              let next90 = calendar.date(byAdding: .day, value: 90, to: today),
-              let next90Exclusive = calendar.date(byAdding: .day, value: 1, to: next90) else {
+              let next90 = calendar.date(
+                byAdding: .day,
+                value: AppConstants.SubTrack.Rules.forecastDays,
+                to: today
+              ),
+              let next90Exclusive = calendar.date(
+                byAdding: .day,
+                value: AppConstants.SubTrack.Rules.nextDayOffset,
+                to: next90
+              ) else {
             return ForecastSummary(buckets: [], next90Days: [])
         }
 
@@ -187,12 +172,17 @@ enum SubTrackEngine {
         var next90Totals: [String: Decimal] = [:]
 
         for item in subscriptions {
-            guard let price = SubscriptionRules.decisionPrice(for: item), price > 0 else { continue }
+            guard let price = SubscriptionRules.decisionPrice(for: item),
+                  price > AppConstants.SubTrack.Rules.minimumMoney else {
+                continue
+            }
             var renewal = max(calendar.startOfDay(for: item.expiresAt), today)
             while renewal < horizon {
                 let components = calendar.dateComponents([.year, .month], from: renewal)
                 guard let year = components.year, let month = components.month else { break }
-                let offset = (year - startYear) * 12 + month - startMonth
+                let offset = (year - startYear) * AppConstants.SubTrack.Rules.monthsPerYear
+                    + month
+                    - startMonth
                 if (0 ..< monthCount).contains(offset) {
                     totalsByMonth[offset, default: [:]][item.currency, default: 0] += price
                 }
@@ -218,7 +208,7 @@ enum SubTrackEngine {
     }
 
     private static func monthKey(year: Int, month: Int) -> String {
-        String(format: "%04d-%02d", year, month)
+        String(format: AppConstants.SubTrack.Rules.monthKeyFormat, year, month)
     }
 
     private static func currencyTotals(_ values: [String: Decimal]) -> [CurrencyTotal] {

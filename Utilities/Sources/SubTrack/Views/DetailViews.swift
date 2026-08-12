@@ -1,34 +1,30 @@
-import SwiftData
 import SwiftUI
 
-// 项目详情，包括配置和续费历史。
+// 项目详情，包括当前状态和配置。
 struct SubscriptionDetailView: View {
     @Environment(AppModel.self) private var model
     let subscription: Subscription
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: AppConstants.SubTrack.Detail.contentSpacing) {
                 header()
                 configuration()
-                purchaseHistory()
             }
-            .padding(22)
-            .frame(maxWidth: 980)
+            .padding(AppConstants.SubTrack.Detail.contentPadding)
+            .frame(maxWidth: AppConstants.SubTrack.Detail.maximumWidth)
             .frame(maxWidth: .infinity)
         }
         .navigationTitle(subscription.name)
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    model.presentedSheet = .purchase(subscription)
-                } label: {
-                    Label("记录续费", systemImage: "cart")
-                }
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     model.presentedSheet = .editor(subscription)
                 } label: {
-                    Label("编辑", systemImage: "pencil")
+                    Label(
+                        AppConstants.Common.edit,
+                        systemImage: "pencil"
+                    )
                 }
             }
         }
@@ -36,32 +32,58 @@ struct SubscriptionDetailView: View {
 
     private func header() -> some View {
         let view = SubscriptionRules.view(for: subscription, now: model.clock)
-        return HStack(alignment: .top, spacing: 18) {
+        return HStack(alignment: .top, spacing: AppConstants.SubTrack.Detail.headerSpacing) {
             Text(String(subscription.name.prefix(1)).uppercased())
-                .font(.system(size: 28, weight: .bold))
-                .frame(width: 58, height: 58)
+                .font(.system(size: AppConstants.SubTrack.Detail.iconFontSize, weight: .bold))
+                .frame(
+                    width: AppConstants.SubTrack.Detail.iconSize,
+                    height: AppConstants.SubTrack.Detail.iconSize
+                )
                 .foregroundStyle(Color.accentColor)
-                .background(Color.accentColor.opacity(0.15))
-                .clipShape(RoundedRectangle(cornerRadius: 13))
-            VStack(alignment: .leading, spacing: 6) {
+                .background(Color.accentColor.opacity(AppConstants.SubTrack.Detail.iconOpacity))
+                .clipShape(
+                    RoundedRectangle(cornerRadius: AppConstants.SubTrack.Detail.iconCornerRadius)
+                )
+            VStack(alignment: .leading, spacing: AppConstants.SubTrack.Detail.titleSpacing) {
                 Text(subscription.name).font(.title2.bold())
-                Text("\(subscription.category) · \(subscription.priority.localizedName) · \(subscription.channel.isEmpty ? "未设置渠道" : subscription.channel)")
+                Text(
+                    String(
+                        format: AppConstants.SubTrack.Detail.projectMetadataFormat,
+                        subscription.category,
+                        subscription.priority.localizedName,
+                        subscription.channel.isEmpty
+                            ? AppConstants.SubTrack.Detail.unsetChannel
+                            : subscription.channel
+                    )
+                )
                     .foregroundStyle(.secondary)
-                HStack(spacing: 10) {
-                    Label(subscription.expiresAt.localizedDate, systemImage: "calendar")
+                HStack(spacing: AppConstants.SubTrack.Detail.metadataSpacing) {
+                    Label(
+                        subscription.expiresAt.localizedDate,
+                        systemImage: "calendar"
+                    )
                     Text(view.status.localizedName)
                         .font(.caption.weight(.bold))
                         .foregroundStyle(view.status.color)
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(view.status.color.opacity(0.12))
+                        .padding(
+                            .horizontal,
+                            AppConstants.SubTrack.Detail.statusHorizontalPadding
+                        )
+                        .padding(
+                            .vertical,
+                            AppConstants.SubTrack.Detail.statusVerticalPadding
+                        )
+                        .background(
+                            view.status.color.opacity(AppConstants.SubTrack.Detail.statusOpacity)
+                        )
                         .clipShape(Capsule())
                 }
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: 4) {
+            VStack(alignment: .trailing, spacing: AppConstants.SubTrack.Detail.priceSpacing) {
                 Text(
                     SubscriptionRules.decisionPrice(for: subscription)?
-                        .money(currency: subscription.currency) ?? "—"
+                        .money(currency: subscription.currency) ?? AppConstants.Common.emDash
                 )
                     .font(.title3.bold())
                 Text(SubscriptionRules.decisionPriceKind(for: subscription))
@@ -72,26 +94,43 @@ struct SubscriptionDetailView: View {
     }
 
     private func configuration() -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("项目配置").font(.headline)
+        VStack(alignment: .leading, spacing: AppConstants.SubTrack.Detail.gridSpacing) {
+            Text(AppConstants.SubTrack.Detail.projectConfiguration).font(.headline)
             LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 220), alignment: .leading)],
+                columns: [
+                    GridItem(
+                        .adaptive(minimum: AppConstants.SubTrack.Detail.gridMinimumWidth),
+                        alignment: .leading
+                    ),
+                ],
                 alignment: .leading,
-                spacing: 12
+                spacing: AppConstants.SubTrack.Detail.gridSpacing
             ) {
-                detail("单次续费", "\(subscription.extensionDays) 天")
-                detail("提前提醒", "\(subscription.reminderDays) 天")
                 detail(
-                    "官方价格",
-                    subscription.officialPrice > 0
-                        ? subscription.officialPrice.money(currency: subscription.currency)
-                        : "未设置"
+                    AppConstants.SubTrack.Detail.renewalPeriod,
+                    String(
+                        format: AppConstants.SubTrack.Detail.daysFormat,
+                        subscription.extensionDays
+                    )
                 )
                 detail(
-                    "第三方参考价",
-                    subscription.thirdPartyReference > 0
+                    AppConstants.SubTrack.Detail.reminder,
+                    String(
+                        format: AppConstants.SubTrack.Detail.daysFormat,
+                        subscription.reminderDays
+                    )
+                )
+                detail(
+                    AppConstants.SubTrack.Detail.officialPrice,
+                    subscription.officialPrice > AppConstants.SubTrack.Rules.minimumMoney
+                        ? subscription.officialPrice.money(currency: subscription.currency)
+                        : AppConstants.SubTrack.Detail.unset
+                )
+                detail(
+                    AppConstants.SubTrack.Detail.thirdPartyPrice,
+                    subscription.thirdPartyReference > AppConstants.SubTrack.Rules.minimumMoney
                         ? subscription.thirdPartyReference.money(currency: subscription.currency)
-                        : "未设置"
+                        : AppConstants.SubTrack.Detail.unset
                 )
             }
             if !subscription.notes.isEmpty {
@@ -102,33 +141,11 @@ struct SubscriptionDetailView: View {
         .subTrackCard()
     }
 
-    private func purchaseHistory() -> some View {
-        let purchases = subscription.purchases.sorted { $0.purchasedAt > $1.purchasedAt }
-        return VStack(alignment: .leading, spacing: 12) {
-            Text("续费历史").font(.headline)
-            if purchases.isEmpty {
-                Text("暂无续费记录").foregroundStyle(.secondary)
-            } else {
-                ForEach(purchases) { purchase in
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(purchase.purchasedAt.localizedDate).font(.subheadline.weight(.semibold))
-                            Text("\(purchase.channel) · 延长 \(purchase.extensionDays) 天 · 新到期日 \(purchase.newExpiry.localizedDate)")
-                                .font(.caption).foregroundStyle(.secondary)
-                            if !purchase.notes.isEmpty { Text(purchase.notes).font(.caption) }
-                        }
-                        Spacer()
-                        Text(purchase.price.money(currency: purchase.currency)).font(.subheadline.bold())
-                    }
-                    if purchase.persistentModelID != purchases.last?.persistentModelID { Divider() }
-                }
-            }
-        }
-        .subTrackCard()
-    }
-
     private func detail(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
+        VStack(
+            alignment: .leading,
+            spacing: AppConstants.SubTrack.Detail.rowSpacing
+        ) {
             Text(label).font(.caption).foregroundStyle(.secondary)
             Text(value).font(.subheadline.weight(.semibold))
         }

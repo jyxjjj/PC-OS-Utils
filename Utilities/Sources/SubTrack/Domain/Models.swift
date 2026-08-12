@@ -11,10 +11,10 @@ nonisolated enum SubscriptionPriority: String, Codable, CaseIterable, Identifiab
 
     var localizedName: String {
         switch self {
-        case .essential: "刚需"
-        case .high: "高频"
-        case .normal: "普通"
-        case .low: "低频"
+        case .essential: AppConstants.SubTrack.Model.essentialPriority
+        case .high: AppConstants.SubTrack.Model.highPriority
+        case .normal: AppConstants.SubTrack.Model.normalPriority
+        case .low: AppConstants.SubTrack.Model.lowPriority
         }
     }
 }
@@ -26,9 +26,9 @@ nonisolated enum SubscriptionStatus: Sendable {
 
     var localizedName: String {
         switch self {
-        case .active: "有效"
-        case .dueSoon: "即将到期"
-        case .expired: "已到期"
+        case .active: AppConstants.SubTrack.Model.activeStatus
+        case .dueSoon: AppConstants.SubTrack.Model.dueSoonStatus
+        case .expired: AppConstants.SubTrack.Model.expiredStatus
         }
     }
 }
@@ -43,8 +43,8 @@ nonisolated struct SubscriptionInput: Sendable {
     var channel: String = ""
     var priority: SubscriptionPriority = .normal
     var notes: String = ""
-    var currency: String = "CNY"
-    var reminderDays: Int = 30
+    var currency: String = AppConstants.SubTrack.defaultCurrency
+    var reminderDays: Int = AppConstants.SubTrack.defaultReminderDays
 }
 
 @Model
@@ -60,9 +60,6 @@ final class Subscription {
     var notes: String
     var currency: String
     var reminderDays: Int
-
-    @Relationship(deleteRule: .cascade, inverse: \PurchaseRecord.subscription)
-    var purchases: [PurchaseRecord] = []
 
     init(input: SubscriptionInput) {
         name = input.name
@@ -92,36 +89,6 @@ final class Subscription {
             currency: currency,
             reminderDays: reminderDays
         )
-    }
-}
-
-@Model
-final class PurchaseRecord {
-    var purchasedAt: Date
-    var price: Decimal
-    var currency: String
-    var channel: String
-    var extensionDays: Int
-    var newExpiry: Date
-    var notes: String
-    var subscription: Subscription?
-
-    init(
-        purchasedAt: Date,
-        price: Decimal,
-        currency: String,
-        channel: String,
-        extensionDays: Int,
-        newExpiry: Date,
-        notes: String
-    ) {
-        self.purchasedAt = purchasedAt
-        self.price = price
-        self.currency = currency
-        self.channel = channel
-        self.extensionDays = extensionDays
-        self.newExpiry = newExpiry
-        self.notes = notes
     }
 }
 

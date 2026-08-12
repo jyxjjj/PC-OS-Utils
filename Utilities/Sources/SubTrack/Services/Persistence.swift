@@ -10,10 +10,9 @@ final class SubTrackStore {
     init() throws {
         let schema = Schema([
             Subscription.self,
-            PurchaseRecord.self,
         ])
         let configuration = ModelConfiguration(
-            "SubTrack",
+            AppConstants.SubTrack.modelConfigurationName,
             schema: schema,
             groupContainer: .none,
             cloudKitDatabase: .none
@@ -68,22 +67,6 @@ final class SubTrackStore {
     func delete(_ subscription: Subscription) throws {
         try transaction {
             context.delete(subscription)
-        }
-    }
-
-    func recordPurchase(
-        for subscription: Subscription,
-        purchase: PurchaseRecord
-    ) throws {
-        try transaction {
-            if subscription.expiresAt != purchase.newExpiry {
-                subscription.expiresAt = purchase.newExpiry
-            }
-            if subscription.channel != purchase.channel {
-                subscription.channel = purchase.channel
-            }
-            purchase.subscription = subscription
-            context.insert(purchase)
         }
     }
 
