@@ -22,10 +22,10 @@ private struct SubTrackCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("新建项目") {
+            Button(AppConstants.Application.newProject) {
                 context?.createProject()
             }
-            .keyboardShortcut("n")
+            .keyboardShortcut(AppConstants.Application.newProjectShortcut)
             .disabled(context?.canCreateProject != true)
         }
     }
@@ -35,24 +35,42 @@ private struct SubTrackCommands: Commands {
 @MainActor
 struct UtilitiesApp: App {
     var body: some Scene {
-        WindowGroup("DESMG Utilities", id: "launcher") {
+        WindowGroup(
+            AppConstants.Application.displayName,
+            id: AppConstants.Application.launcherWindowID
+        ) {
             LauncherView()
-                .frame(minWidth: 680, minHeight: 430)
+                .frame(
+                    minWidth: AppConstants.Application.launcherMinimumWidth,
+                    minHeight: AppConstants.Application.launcherMinimumHeight
+                )
         }
         .windowResizability(.contentMinSize)
 
-        Window("SubTrack", id: "subtrack") {
+        Window(
+            AppConstants.Application.subTrackName,
+            id: AppConstants.Application.subTrackWindowID
+        ) {
             SubTrackRootView()
-                .frame(minWidth: 980, minHeight: 680)
+                .frame(
+                    minWidth: AppConstants.Application.subTrackMinimumWidth,
+                    minHeight: AppConstants.Application.subTrackMinimumHeight
+                )
         }
         .windowStyle(.titleBar)
         .commands {
             SubTrackCommands()
         }
 
-        Window("身份验证器", id: "authenticator") {
+        Window(
+            AppConstants.Application.authenticatorName,
+            id: AppConstants.Application.authenticatorWindowID
+        ) {
             AuthenticatorRootView()
-                .frame(minWidth: 400, minHeight: 500)
+                .frame(
+                    minWidth: AppConstants.Application.authenticatorMinimumWidth,
+                    minHeight: AppConstants.Application.authenticatorMinimumHeight
+                )
         }
         .windowStyle(.titleBar)
     }
@@ -75,7 +93,7 @@ private struct SubTrackRootView: View {
                         )
                     )
             } else {
-                ProgressView("正在载入 SubTrack…")
+                ProgressView(AppConstants.Application.loadingSubTrack)
                     .onAppear {
                         guard model == nil else { return }
                         model = AppModel()
@@ -86,7 +104,7 @@ private struct SubTrackRootView: View {
             ($0.object as! NSWindow).preventsApplicationTerminationWhenModal = false
         }
         .onDisappear {
-            openWindow(id: "launcher")
+            openWindow(id: AppConstants.Application.launcherWindowID)
         }
     }
 }
@@ -103,7 +121,7 @@ private struct AuthenticatorRootView: View {
             }
             .onDisappear {
                 appState.lock()
-                openWindow(id: "launcher")
+                openWindow(id: AppConstants.Application.launcherWindowID)
             }
     }
 }

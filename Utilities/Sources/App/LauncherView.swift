@@ -7,57 +7,64 @@ struct LauncherView: View {
 
     @State private var isOpeningFeature = false
 
-    private let projectURL = URL(string: "https://github.com/jyxjjj/PC-OS-Utils")!
+    private let projectURL = URL(string: AppConstants.Launcher.projectURL)!
 
     private var version: String {
         let shortVersion = Bundle.main.object(
-            forInfoDictionaryKey: "CFBundleShortVersionString"
+            forInfoDictionaryKey: AppConstants.Launcher.shortVersionKey
         ) as! String
         let build = Bundle.main.object(
-            forInfoDictionaryKey: "CFBundleVersion"
+            forInfoDictionaryKey: AppConstants.Launcher.buildVersionKey
         ) as! String
-        return "\(shortVersion) (\(build))"
+        return String(
+            format: AppConstants.Launcher.versionFormat,
+            shortVersion,
+            build
+        )
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 26) {
+        VStack(alignment: .leading, spacing: AppConstants.Launcher.outerSpacing) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("小工具")
+                VStack(alignment: .leading, spacing: AppConstants.Launcher.titleSpacing) {
+                    Text(AppConstants.Launcher.title)
                         .font(.largeTitle.bold())
-                    Text("选择要启动的工具。")
+                    Text(AppConstants.Launcher.subtitle)
                         .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
                 Link(destination: projectURL) {
-                    Image("GitHubLogo")
+                    Image(AppConstants.Launcher.gitHubLogoAsset)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 24, height: 24)
-                        .padding(8)
+                        .frame(
+                            width: AppConstants.Launcher.logoSize,
+                            height: AppConstants.Launcher.logoSize
+                        )
+                        .padding(AppConstants.Launcher.logoPadding)
                         .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .glassEffect(.regular.interactive(), in: .circle)
             }
 
-            GlassEffectContainer(spacing: 18) {
-                HStack(spacing: 18) {
+            GlassEffectContainer(spacing: AppConstants.Launcher.cardContainerSpacing) {
+                HStack(spacing: AppConstants.Launcher.cardContainerSpacing) {
                     toolCard(
-                        title: "订阅管理",
-                        description: "管理订阅、到期提醒、价格与续费记录。",
+                        title: AppConstants.Launcher.subTrackTitle,
+                        description: AppConstants.Launcher.subTrackDescription,
                         symbol: "calendar.badge.clock",
                         tint: .blue,
-                        windowID: "subtrack"
+                        windowID: AppConstants.Application.subTrackWindowID
                     )
                     toolCard(
-                        title: "身份验证器",
-                        description: "管理本地加密的 TOTP 验证码。",
+                        title: AppConstants.Launcher.authenticatorTitle,
+                        description: AppConstants.Launcher.authenticatorDescription,
                         symbol: "key.viewfinder",
                         tint: .cyan,
-                        windowID: "authenticator"
+                        windowID: AppConstants.Application.authenticatorWindowID
                     )
                 }
                 .frame(maxHeight: .infinity)
@@ -66,22 +73,25 @@ struct LauncherView: View {
 
             Divider()
 
-            HStack(alignment: .center, spacing: 24) {
-                Text("GNU Affero General Public License v3.0")
+            HStack(alignment: .center, spacing: AppConstants.Launcher.footerSpacing) {
+                Text(AppConstants.Launcher.license)
                     .font(.headline)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: AppConstants.Launcher.footerMinimumSpacer)
 
-                Text("Version \(version)")
+                Text(version)
                     .foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(34)
-        .padding(.top, 16)
+        .padding(AppConstants.Launcher.contentPadding)
+        .padding(.top, AppConstants.Launcher.topPadding)
         .background {
             LinearGradient(
-                colors: [.black, Color.blue.opacity(0.2)],
+                colors: [
+                    .black,
+                    Color.blue.opacity(AppConstants.Launcher.gradientBlueOpacity),
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -105,11 +115,11 @@ struct LauncherView: View {
         Button {
             isOpeningFeature = true
             openWindow(id: windowID)
-            dismissWindow(id: "launcher")
+            dismissWindow(id: AppConstants.Application.launcherWindowID)
         } label: {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: AppConstants.Launcher.cardContentSpacing) {
                 Image(systemName: symbol)
-                    .font(.system(size: 34, weight: .semibold))
+                    .font(.system(size: AppConstants.Launcher.cardSymbolSize, weight: .semibold))
                     .foregroundStyle(tint)
                 Text(title)
                     .font(.title2.bold())
@@ -117,20 +127,28 @@ struct LauncherView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 4)
-                Label("启动", systemImage: "arrow.up.forward.app")
+                Spacer(minLength: AppConstants.Launcher.cardMinimumSpacer)
+                Label(
+                    AppConstants.Launcher.launch,
+                    systemImage: "arrow.up.forward.app"
+                )
                     .font(.headline)
                     .foregroundStyle(tint)
             }
-            .padding(22)
+            .padding(AppConstants.Launcher.cardPadding)
             .frame(
                 maxWidth: .infinity,
-                minHeight: 234,
+                minHeight: AppConstants.Launcher.cardMinimumHeight,
                 maxHeight: .infinity,
                 alignment: .leading
             )
-            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
-            .contentShape(RoundedRectangle(cornerRadius: 18))
+            .glassEffect(
+                .regular.interactive(),
+                in: .rect(cornerRadius: AppConstants.Launcher.cardCornerRadius)
+            )
+            .contentShape(
+                RoundedRectangle(cornerRadius: AppConstants.Launcher.cardCornerRadius)
+            )
         }
         .buttonStyle(.plain)
     }
