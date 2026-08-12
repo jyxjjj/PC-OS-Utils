@@ -1,13 +1,25 @@
 import Foundation
 
 // 业务层会抛出的错误。
-enum SubTrackError: LocalizedError, Sendable {
-    case invalidInput(String)
+nonisolated enum SubTrackInputField: Sendable {
+    case name
+    case category
+    case channel
+    case notes
+    case currency
+    case extensionDays
+    case reminderDays
+    case officialPrice
+    case thirdPartyPrice
+}
+
+nonisolated enum SubTrackError: LocalizedError, Sendable {
+    case invalidInput(SubTrackInputField, String)
     case unavailable
 
     var errorDescription: String? {
         switch self {
-        case let .invalidInput(message): message
+        case let .invalidInput(_, message): message
         case .unavailable: AppConstants.SubTrack.databaseUnavailable
         }
     }
@@ -37,35 +49,49 @@ enum SubscriptionRules {
 
         guard !input.name.isEmpty,
               input.name.count <= AppConstants.SubTrack.Rules.maximumNameLength else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidName)
+            throw SubTrackError.invalidInput(.name, AppConstants.SubTrack.Rules.invalidName)
         }
         guard !input.category.isEmpty,
               input.category.count <= AppConstants.SubTrack.Rules.maximumCategoryLength else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidCategory)
+            throw SubTrackError.invalidInput(
+                .category,
+                AppConstants.SubTrack.Rules.invalidCategory
+            )
         }
         guard input.channel.count <= AppConstants.SubTrack.Rules.maximumChannelLength else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidChannel)
+            throw SubTrackError.invalidInput(.channel, AppConstants.SubTrack.Rules.invalidChannel)
         }
         guard input.notes.count <= AppConstants.SubTrack.Rules.maximumNotesLength else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidNotes)
+            throw SubTrackError.invalidInput(.notes, AppConstants.SubTrack.Rules.invalidNotes)
         }
         guard AppConstants.SubTrack.currencyCodes.contains(input.currency) else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.unsupportedCurrency)
+            throw SubTrackError.invalidInput(
+                .currency,
+                AppConstants.SubTrack.Rules.unsupportedCurrency
+            )
         }
         guard (AppConstants.SubTrack.Rules.minimumExtensionDays ...
                AppConstants.SubTrack.Rules.maximumExtensionDays).contains(input.extensionDays) else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidExtensionDays)
+            throw SubTrackError.invalidInput(
+                .extensionDays,
+                AppConstants.SubTrack.Rules.invalidExtensionDays
+            )
         }
         guard (AppConstants.SubTrack.Rules.minimumReminderDays ...
                AppConstants.SubTrack.Rules.maximumReminderDays).contains(input.reminderDays) else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Rules.invalidReminderDays)
+            throw SubTrackError.invalidInput(
+                .reminderDays,
+                AppConstants.SubTrack.Rules.invalidReminderDays
+            )
         }
         try validateMoney(
             input.officialPrice,
+            field: .officialPrice,
             label: AppConstants.SubTrack.Rules.officialPrice
         )
         try validateMoney(
             input.thirdPartyReference,
+            field: .thirdPartyPrice,
             label: AppConstants.SubTrack.Rules.thirdPartyPrice
         )
         return input
@@ -120,10 +146,15 @@ enum SubscriptionRules {
         return AppConstants.SubTrack.Rules.unsetPriceKind
     }
 
-    private static func validateMoney(_ value: Decimal, label: String) throws {
+    private static func validateMoney(
+        _ value: Decimal,
+        field: SubTrackInputField,
+        label: String
+    ) throws {
         guard value >= AppConstants.SubTrack.Rules.minimumMoney,
               value <= AppConstants.SubTrack.Rules.maximumMoney else {
             throw SubTrackError.invalidInput(
+                field,
                 String(format: AppConstants.SubTrack.Rules.invalidMoneyFormat, label)
             )
         }

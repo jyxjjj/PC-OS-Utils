@@ -88,12 +88,7 @@ struct TOTPRowView: View {
                         value: fraction
                     )
                 Text(String(Int(timeRemaining)))
-                    .font(
-                        .system(
-                            size: AppConstants.Authenticator.Row.timerFontSize,
-                            weight: .medium
-                        )
-                    )
+                    .font(.caption.weight(.medium))
                     .foregroundColor(.secondary)
             }
             .frame(

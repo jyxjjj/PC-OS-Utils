@@ -1,5 +1,4 @@
 import Foundation
-import SwiftUI
 
 nonisolated enum AppConstants {
     nonisolated enum Common {
@@ -21,8 +20,6 @@ nonisolated enum AppConstants {
         static let authenticatorWindowID = "authenticator"
         static let subTrackName = "订阅管理"
         static let authenticatorName = "身份验证器"
-        static let newProject = "新建项目"
-        static let newProjectShortcut = KeyEquivalent("n")
         static let loadingSubTrack = "正在载入订阅管理…"
 
         static let launcherMinimumWidth = 680.0
@@ -173,7 +170,8 @@ nonisolated enum AppConstants {
             static let refreshInterval = 1.0
             static let title = "身份验证器"
             static let lock = "锁定"
-            static let exportImport = "导出 / 导入"
+            static let export = "导出账户"
+            static let `import` = "导入账户"
             static let addAccount = "添加账户"
             static let deleteTitle = "删除账户？"
             static let deleteMessageFormat = "将永久删除 \"%@\" 的验证码账户。此操作无法撤销。"
@@ -194,7 +192,6 @@ nonisolated enum AppConstants {
             static let groupedCodeFormat = "%@ %@"
             static let rotationDegrees = -90.0
             static let animationDuration = 1.0
-            static let timerFontSize = 9.0
             static let timerSize = 28.0
             static let copyButtonWidth = 20.0
             static let copyFeedbackSeconds = 2.0
@@ -207,6 +204,9 @@ nonisolated enum AppConstants {
             static let servicePrompt = "例如 GitHub"
             static let serviceName = "服务名称"
             static let username = "用户名或备注"
+            static let invalidServiceName = "服务名称不能为空"
+            static let serviceNameContainsSeparator = "服务名称不能包含冒号"
+            static let usernameContainsSeparator = "用户名不能包含冒号"
             static let secretSection = "密钥"
             static let useURI = "使用 otpauth:// URI"
             static let uri = "otpauth:// URI"
@@ -233,9 +233,11 @@ nonisolated enum AppConstants {
         }
 
         nonisolated enum Transfer {
-            static let title = "导出 / 导入"
-            static let done = "完成"
+            static let exportTitle = "导出账户"
+            static let importTitle = "导入账户"
+            static let close = "关闭"
             static let exportDescription = "将完整的 otpauth:// URI 导出为 UTF-8 文本"
+            static let importDescription = "从包含 otpauth:// URI 的 UTF-8 文本导入账户"
             static let secretWarning = "导出内容包含明文 TOTP 密钥"
             static let export = "导出"
             static let `import` = "导入"
@@ -249,7 +251,6 @@ nonisolated enum AppConstants {
             static let descriptionSpacing = 8.0
             static let descriptionOpacity = 0.08
             static let descriptionCornerRadius = 8.0
-            static let buttonsSpacing = 16.0
             static let width = 440.0
             static let height = 300.0
             static let overlayOpacity = 0.22
@@ -340,7 +341,8 @@ nonisolated enum AppConstants {
             static let dateFieldSpacing = 6.0
             static let requiredFieldSpacing = 0.0
             static let dateFieldWidth = 92.0
-            static let invalidIntegerFields = "单次续费天数和提前提醒天数必须是整数"
+            static let invalidExtensionDaysInteger = "单次续费天数必须是整数"
+            static let invalidReminderDaysInteger = "提前提醒天数必须是整数"
             static let basicInformation = "基本信息"
             static let name = "名称"
             static let categoryPrompt = "域名 / 服务器 / 软件 / 会员"
@@ -363,8 +365,9 @@ nonisolated enum AppConstants {
             static let currencyChangeTitle = "切换币种会清空金额"
             static let changeAndClear = "切换并清空"
             static let noCurrencyConversion = "订阅管理功能不会自动换汇。"
-            static let subscriptionNotesMinimumLines = 3
-            static let subscriptionNotesMaximumLines = 8
+            static let subscriptionNotesMinimumHeight = 72.0
+            static let subscriptionNotesIdealHeight = 132.0
+            static let subscriptionNotesMaximumHeight = 180.0
             static let subscriptionMinimumWidth = 600.0
             static let subscriptionMinimumHeight = 360.0
             static let subscriptionIdealHeight = 640.0

@@ -1,9 +1,18 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum TransferMode: Hashable, Identifiable {
+    case export
+    case `import`
+
+    var id: Self { self }
+}
+
 struct ExportImportView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
+
+    let mode: TransferMode
 
     @State private var message = ""
     @State private var isSuccess = false
@@ -15,9 +24,8 @@ struct ExportImportView: View {
     var body: some View {
         VStack(spacing: AppConstants.Authenticator.Transfer.stackSpacing) {
             HStack {
-                Text(AppConstants.Authenticator.Transfer.title).font(.headline)
+                Text(title).font(.headline)
                 Spacer()
-                Button(AppConstants.Authenticator.Transfer.done) { dismiss() }
             }
             .padding()
 
@@ -29,13 +37,15 @@ struct ExportImportView: View {
                     spacing: AppConstants.Authenticator.Transfer.descriptionSpacing
                 ) {
                     Label(
-                        AppConstants.Authenticator.Transfer.exportDescription,
+                        description,
                         systemImage: "doc.plaintext"
                     )
-                    Label(
-                        AppConstants.Authenticator.Transfer.secretWarning,
-                        systemImage: "exclamationmark.triangle.fill"
-                    )
+                    if mode == .export {
+                        Label(
+                            AppConstants.Authenticator.Transfer.secretWarning,
+                            systemImage: "exclamationmark.triangle.fill"
+                        )
+                    }
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -48,26 +58,28 @@ struct ExportImportView: View {
                 .cornerRadius(AppConstants.Authenticator.Transfer.descriptionCornerRadius)
                 .padding(.horizontal)
 
-                HStack(spacing: AppConstants.Authenticator.Transfer.buttonsSpacing) {
-                    Button(action: prepareExport) {
-                        Label(
-                            AppConstants.Authenticator.Transfer.export,
-                            systemImage: "square.and.arrow.up"
-                        )
-                            .frame(maxWidth: .infinity)
+                Group {
+                    if mode == .export {
+                        Button(action: prepareExport) {
+                            Label(
+                                AppConstants.Authenticator.Transfer.export,
+                                systemImage: "square.and.arrow.up"
+                            )
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                    } else {
+                        Button { showImport = true } label: {
+                            Label(
+                                AppConstants.Authenticator.Transfer.`import`,
+                                systemImage: "square.and.arrow.down"
+                            )
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-
-                    Button { showImport = true } label: {
-                        Label(
-                            AppConstants.Authenticator.Transfer.`import`,
-                            systemImage: "square.and.arrow.down"
-                        )
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
                 }
                 .padding(.horizontal)
 
@@ -80,6 +92,15 @@ struct ExportImportView: View {
                 }
             }
             .padding(.top)
+
+            Spacer()
+            Divider()
+            HStack {
+                Spacer()
+                Button(AppConstants.Authenticator.Transfer.close) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+            }
+            .padding()
         }
         .frame(
             width: AppConstants.Authenticator.Transfer.width,
@@ -130,6 +151,20 @@ struct ExportImportView: View {
             allowsMultipleSelection: false,
             onCompletion: importFile
         )
+    }
+
+    private var title: String {
+        switch mode {
+        case .export: AppConstants.Authenticator.Transfer.exportTitle
+        case .import: AppConstants.Authenticator.Transfer.importTitle
+        }
+    }
+
+    private var description: String {
+        switch mode {
+        case .export: AppConstants.Authenticator.Transfer.exportDescription
+        case .import: AppConstants.Authenticator.Transfer.importDescription
+        }
     }
 
     private func prepareExport() {

@@ -13,6 +13,30 @@ private struct SubTrackRequiredFieldLabel: View {
     }
 }
 
+private struct SubTrackFieldError: View {
+    let message: String
+
+    var body: some View {
+        if !message.isEmpty {
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.red)
+        }
+    }
+}
+
+private struct SubTrackFieldErrors {
+    var name = ""
+    var category = ""
+    var extensionDays = ""
+    var channel = ""
+    var notes = ""
+    var currency = ""
+    var officialPrice = ""
+    var thirdPartyPrice = ""
+    var reminderDays = ""
+}
+
 // 文本框负责固定格式，弹出式 DatePicker 负责日历选择。
 private struct EditorDateField: View {
     @Binding var selection: Date
@@ -87,8 +111,17 @@ private struct SubscriptionDraft: Equatable {
     }
 
     func input() throws -> SubscriptionInput {
-        guard let extensionDays, let reminderDays else {
-            throw SubTrackError.invalidInput(AppConstants.SubTrack.Editor.invalidIntegerFields)
+        guard let extensionDays else {
+            throw SubTrackError.invalidInput(
+                .extensionDays,
+                AppConstants.SubTrack.Editor.invalidExtensionDaysInteger
+            )
+        }
+        guard let reminderDays else {
+            throw SubTrackError.invalidInput(
+                .reminderDays,
+                AppConstants.SubTrack.Editor.invalidReminderDaysInteger
+            )
         }
         return SubscriptionInput(
             name: name,
@@ -114,6 +147,7 @@ struct SubscriptionEditorView: View {
     let subscription: Subscription?
     private let initialDraft: SubscriptionDraft
     @State private var draft: SubscriptionDraft
+    @State private var fieldErrors = SubTrackFieldErrors()
     @State private var errorMessage = ""
     @State private var confirmDiscard = false
     @State private var pendingCurrency: String?
@@ -128,17 +162,38 @@ struct SubscriptionEditorView: View {
     private var dirty: Bool { draft != initialDraft }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            HStack {
+                Text(
+                    subscription == nil
+                        ? AppConstants.SubTrack.Editor.addTitle
+                        : AppConstants.SubTrack.Editor.editTitle
+                )
+                .font(.headline)
+                Spacer()
+            }
+            .padding()
+
+            Divider()
+
             Form {
                 Section(AppConstants.SubTrack.Editor.basicInformation) {
-                    TextField(text: $draft.name) {
-                        SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.name)
+                    VStack(alignment: .leading) {
+                        TextField(text: $draft.name) {
+                            SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.name)
+                        }
+                        SubTrackFieldError(message: fieldErrors.name)
                     }
-                    TextField(
-                        text: $draft.category,
-                        prompt: Text(AppConstants.SubTrack.Editor.categoryPrompt)
-                    ) {
-                        SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.category)
+                    VStack(alignment: .leading) {
+                        TextField(
+                            text: $draft.category,
+                            prompt: Text(AppConstants.SubTrack.Editor.categoryPrompt)
+                        ) {
+                            SubTrackRequiredFieldLabel(
+                                title: AppConstants.SubTrack.Editor.category
+                            )
+                        }
+                        SubTrackFieldError(message: fieldErrors.category)
                     }
                     LabeledContent {
                         EditorDateField(selection: $draft.expiry)
@@ -147,49 +202,76 @@ struct SubscriptionEditorView: View {
                             title: AppConstants.SubTrack.Editor.expirationDate
                         )
                     }
-                    TextField(value: $draft.extensionDays, format: .number) {
-                        SubTrackRequiredFieldLabel(
-                            title: AppConstants.SubTrack.Editor.extensionDays
-                        )
+                    VStack(alignment: .leading) {
+                        TextField(value: $draft.extensionDays, format: .number) {
+                            SubTrackRequiredFieldLabel(
+                                title: AppConstants.SubTrack.Editor.extensionDays
+                            )
+                        }
+                        SubTrackFieldError(message: fieldErrors.extensionDays)
                     }
                     Picker(selection: $draft.priority) {
                         ForEach(SubscriptionPriority.allCases) { Text($0.localizedName).tag($0) }
                     } label: {
                         SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.priority)
                     }
-                    TextField(AppConstants.SubTrack.Editor.purchaseChannel, text: $draft.channel)
-                    TextField(
-                        AppConstants.SubTrack.Editor.notes,
-                        text: $draft.notes,
-                        axis: .vertical
-                    )
-                    .lineLimit(
-                        AppConstants.SubTrack.Editor.subscriptionNotesMinimumLines ...
-                            AppConstants.SubTrack.Editor.subscriptionNotesMaximumLines
-                    )
+                    VStack(alignment: .leading) {
+                        TextField(
+                            AppConstants.SubTrack.Editor.purchaseChannel,
+                            text: $draft.channel
+                        )
+                        SubTrackFieldError(message: fieldErrors.channel)
+                    }
+                    VStack(alignment: .leading) {
+                        Text(AppConstants.SubTrack.Editor.notes)
+                        TextEditor(text: $draft.notes)
+                            .frame(
+                                minHeight:
+                                    AppConstants.SubTrack.Editor.subscriptionNotesMinimumHeight,
+                                idealHeight:
+                                    AppConstants.SubTrack.Editor.subscriptionNotesIdealHeight,
+                                maxHeight:
+                                    AppConstants.SubTrack.Editor.subscriptionNotesMaximumHeight
+                            )
+                        SubTrackFieldError(message: fieldErrors.notes)
+                    }
                 }
                 Section(AppConstants.SubTrack.Editor.priceAndReminder) {
-                    Picker(selection: currencyBinding) {
-                        ForEach(AppConstants.SubTrack.currencyCodes, id: \.self) {
-                            Text($0).tag($0)
+                    VStack(alignment: .leading) {
+                        Picker(selection: currencyBinding) {
+                            ForEach(AppConstants.SubTrack.currencyCodes, id: \.self) {
+                                Text($0).tag($0)
+                            }
+                        } label: {
+                            SubTrackRequiredFieldLabel(
+                                title: AppConstants.SubTrack.Editor.currency
+                            )
                         }
-                    } label: {
-                        SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.currency)
+                        SubTrackFieldError(message: fieldErrors.currency)
                     }
-                    TextField(
-                        AppConstants.SubTrack.Editor.officialPrice,
-                        value: $draft.officialPrice,
-                        format: .number
-                    )
-                    TextField(
-                        AppConstants.SubTrack.Editor.thirdPartyPrice,
-                        value: $draft.thirdPartyReference,
-                        format: .number
-                    )
-                    TextField(value: $draft.reminderDays, format: .number) {
-                        SubTrackRequiredFieldLabel(
-                            title: AppConstants.SubTrack.Editor.reminderDays
+                    VStack(alignment: .leading) {
+                        TextField(
+                            AppConstants.SubTrack.Editor.officialPrice,
+                            value: $draft.officialPrice,
+                            format: .number
                         )
+                        SubTrackFieldError(message: fieldErrors.officialPrice)
+                    }
+                    VStack(alignment: .leading) {
+                        TextField(
+                            AppConstants.SubTrack.Editor.thirdPartyPrice,
+                            value: $draft.thirdPartyReference,
+                            format: .number
+                        )
+                        SubTrackFieldError(message: fieldErrors.thirdPartyPrice)
+                    }
+                    VStack(alignment: .leading) {
+                        TextField(value: $draft.reminderDays, format: .number) {
+                            SubTrackRequiredFieldLabel(
+                                title: AppConstants.SubTrack.Editor.reminderDays
+                            )
+                        }
+                        SubTrackFieldError(message: fieldErrors.reminderDays)
                     }
                 }
                 if !errorMessage.isEmpty {
@@ -197,19 +279,16 @@ struct SubscriptionEditorView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle(
-                subscription == nil
-                    ? AppConstants.SubTrack.Editor.addTitle
-                    : AppConstants.SubTrack.Editor.editTitle
-            )
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(AppConstants.Common.cancel) { requestClose() }
-                }
-                ToolbarItem(placement: .primaryAction) {
-                    Button(AppConstants.Common.save) { save() }
-                }
+
+            Divider()
+            HStack {
+                Spacer()
+                Button(AppConstants.Common.cancel) { requestClose() }
+                    .keyboardShortcut(.cancelAction)
+                Button(AppConstants.Common.save) { save() }
+                    .keyboardShortcut(.defaultAction)
             }
+            .padding()
         }
         .frame(
             minWidth: AppConstants.SubTrack.Editor.subscriptionMinimumWidth,
@@ -237,6 +316,17 @@ struct SubscriptionEditorView: View {
         } message: {
             Text(AppConstants.SubTrack.Editor.noCurrencyConversion)
         }
+        .onChange(of: draft.name) { _, _ in fieldErrors.name = "" }
+        .onChange(of: draft.category) { _, _ in fieldErrors.category = "" }
+        .onChange(of: draft.extensionDays) { _, _ in fieldErrors.extensionDays = "" }
+        .onChange(of: draft.channel) { _, _ in fieldErrors.channel = "" }
+        .onChange(of: draft.notes) { _, _ in fieldErrors.notes = "" }
+        .onChange(of: draft.currency) { _, _ in fieldErrors.currency = "" }
+        .onChange(of: draft.officialPrice) { _, _ in fieldErrors.officialPrice = "" }
+        .onChange(of: draft.thirdPartyReference) { _, _ in
+            fieldErrors.thirdPartyPrice = ""
+        }
+        .onChange(of: draft.reminderDays) { _, _ in fieldErrors.reminderDays = "" }
     }
 
     private var currencyBinding: Binding<String> {
@@ -253,10 +343,23 @@ struct SubscriptionEditorView: View {
     }
 
     private func save() {
+        fieldErrors = SubTrackFieldErrors()
         errorMessage = ""
         do {
             try model.saveSubscription(draft.input(), subscription: subscription)
             dismiss()
+        } catch SubTrackError.invalidInput(let field, let message) {
+            switch field {
+            case .name: fieldErrors.name = message
+            case .category: fieldErrors.category = message
+            case .extensionDays: fieldErrors.extensionDays = message
+            case .channel: fieldErrors.channel = message
+            case .notes: fieldErrors.notes = message
+            case .currency: fieldErrors.currency = message
+            case .officialPrice: fieldErrors.officialPrice = message
+            case .thirdPartyPrice: fieldErrors.thirdPartyPrice = message
+            case .reminderDays: fieldErrors.reminderDays = message
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

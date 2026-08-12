@@ -5,6 +5,7 @@ struct AuthenticatorContentView: View {
 
     @State private var userKey = ""
     @State private var keyConfirmation = ""
+    @State private var confirmationError = ""
     @State private var errorMessage = ""
     @State private var isUnlocking = false
 
@@ -78,17 +79,25 @@ struct AuthenticatorContentView: View {
             }
 
             VStack(spacing: AppConstants.Authenticator.Unlock.fieldsSpacing) {
-                SecureField(AppConstants.Authenticator.Unlock.keyPrompt, text: $userKey)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(beginUnlock)
-
-                if !appState.isConfigured {
-                    SecureField(
-                        AppConstants.Authenticator.Unlock.confirmationPrompt,
-                        text: $keyConfirmation
-                    )
+                VStack(alignment: .leading) {
+                    Text(AppConstants.Authenticator.Unlock.keyPrompt)
+                    SecureField("", text: $userKey)
                         .textFieldStyle(.roundedBorder)
                         .onSubmit(beginUnlock)
+                }
+
+                if !appState.isConfigured {
+                    VStack(alignment: .leading) {
+                        Text(AppConstants.Authenticator.Unlock.confirmationPrompt)
+                        SecureField("", text: $keyConfirmation)
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit(beginUnlock)
+                        if !confirmationError.isEmpty {
+                            Text(confirmationError)
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                        }
+                    }
                 }
             }
 
@@ -114,11 +123,14 @@ struct AuthenticatorContentView: View {
         }
         .frame(maxWidth: AppConstants.Authenticator.Unlock.maximumContentWidth)
         .padding(AppConstants.Authenticator.Unlock.contentPadding)
+        .onChange(of: keyConfirmation) { _, _ in confirmationError = "" }
     }
 
     private func beginUnlock() {
+        confirmationError = ""
+        errorMessage = ""
         if !appState.isConfigured && userKey != keyConfirmation {
-            errorMessage = AppConstants.Authenticator.Unlock.mismatchedKeys
+            confirmationError = AppConstants.Authenticator.Unlock.mismatchedKeys
             return
         }
 
@@ -130,10 +142,12 @@ struct AuthenticatorContentView: View {
                 try await appState.unlock(with: submittedKey)
                 userKey = ""
                 keyConfirmation = ""
+                confirmationError = ""
                 errorMessage = ""
             } catch {
                 userKey = ""
                 keyConfirmation = ""
+                confirmationError = ""
                 errorMessage = error.localizedDescription
             }
         }

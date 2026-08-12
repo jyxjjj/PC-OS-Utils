@@ -4,7 +4,7 @@ struct TOTPListView: View {
     @Environment(AppState.self) private var appState
 
     @State private var showAddEntry = false
-    @State private var showExportImport = false
+    @State private var transferMode: TransferMode?
     @State private var entryToEdit: TOTPEntry?
     @State private var entryToDelete: TOTPEntry?
     @State private var errorMessage = ""
@@ -37,7 +37,6 @@ struct TOTPListView: View {
                                     Button(AppConstants.Common.edit) {
                                         entryToEdit = entry
                                     }
-                                    .tint(.green)
                                 }
                                 .contextMenu {
                                     Button(AppConstants.Common.edit) { entryToEdit = entry }
@@ -55,7 +54,7 @@ struct TOTPListView: View {
             }
             .navigationTitle(AppConstants.Authenticator.List.title)
             .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .automatic) {
                     Button { appState.lock() } label: {
                         Label(
                             AppConstants.Authenticator.List.lock,
@@ -63,13 +62,22 @@ struct TOTPListView: View {
                         )
                     }
 
-                    Button { showExportImport = true } label: {
+                    Button { transferMode = .export } label: {
                         Label(
-                            AppConstants.Authenticator.List.exportImport,
-                            systemImage: "square.and.arrow.up.on.square"
+                            AppConstants.Authenticator.List.export,
+                            systemImage: "square.and.arrow.up"
                         )
                     }
 
+                    Button { transferMode = .import } label: {
+                        Label(
+                            AppConstants.Authenticator.List.import,
+                            systemImage: "square.and.arrow.down"
+                        )
+                    }
+                }
+
+                ToolbarItem(placement: .primaryAction) {
                     Button { showAddEntry = true } label: {
                         Label(
                             AppConstants.Authenticator.List.addAccount,
@@ -85,8 +93,8 @@ struct TOTPListView: View {
         .sheet(item: $entryToEdit) { entry in
             EntryEditorView(entry: entry)
         }
-        .sheet(isPresented: $showExportImport) {
-            ExportImportView()
+        .sheet(item: $transferMode) { mode in
+            ExportImportView(mode: mode)
         }
         .alert(
             AppConstants.Authenticator.List.deleteTitle,

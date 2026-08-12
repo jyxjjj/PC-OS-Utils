@@ -14,6 +14,25 @@ private struct AuthenticatorRequiredFieldLabel: View {
     }
 }
 
+private struct AuthenticatorFieldError: View {
+    let message: String
+
+    var body: some View {
+        if !message.isEmpty {
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.red)
+        }
+    }
+}
+
+private struct EntryFieldErrors {
+    var serviceName = ""
+    var username = ""
+    var secret = ""
+    var uri = ""
+}
+
 struct EntryEditorView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.dismiss) private var dismiss
@@ -29,7 +48,8 @@ struct EntryEditorView: View {
     @State private var uriString = ""
     @State private var showURIInput = false
     @State private var parsedURI: OTPAuthParameters?
-    @State private var errorMessage = ""
+    @State private var fieldErrors = EntryFieldErrors()
+    @State private var globalError = ""
     @State private var isSaving = false
 
     init(entry: TOTPEntry? = nil) {
@@ -49,10 +69,8 @@ struct EntryEditorView: View {
                         ? AppConstants.Authenticator.Editor.addTitle
                         : AppConstants.Authenticator.Editor.editTitle
                 )
-                    .font(.headline)
+                .font(.headline)
                 Spacer()
-                Button(AppConstants.Common.cancel) { dismiss() }
-                    .keyboardShortcut(.escape)
             }
             .padding()
 
@@ -60,15 +78,21 @@ struct EntryEditorView: View {
 
             Form {
                 Section(AppConstants.Authenticator.Editor.accountSection) {
-                    TextField(
-                        text: $serviceName,
-                        prompt: Text(AppConstants.Authenticator.Editor.servicePrompt)
-                    ) {
-                        AuthenticatorRequiredFieldLabel(
-                            title: AppConstants.Authenticator.Editor.serviceName
-                        )
+                    VStack(alignment: .leading) {
+                        TextField(
+                            text: $serviceName,
+                            prompt: Text(AppConstants.Authenticator.Editor.servicePrompt)
+                        ) {
+                            AuthenticatorRequiredFieldLabel(
+                                title: AppConstants.Authenticator.Editor.serviceName
+                            )
+                        }
+                        AuthenticatorFieldError(message: fieldErrors.serviceName)
                     }
-                    TextField(AppConstants.Authenticator.Editor.username, text: $username)
+                    VStack(alignment: .leading) {
+                        TextField(AppConstants.Authenticator.Editor.username, text: $username)
+                        AuthenticatorFieldError(message: fieldErrors.username)
+                    }
                 }
                 .disabled(entry == nil && showURIInput)
 
@@ -77,35 +101,47 @@ struct EntryEditorView: View {
                         Toggle(AppConstants.Authenticator.Editor.useURI, isOn: $showURIInput)
 
                         if showURIInput {
-                            HStack {
-                                TextField(text: $uriString) {
-                                    AuthenticatorRequiredFieldLabel(
-                                        title: AppConstants.Authenticator.Editor.uri
-                                    )
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    TextField(text: $uriString) {
+                                        AuthenticatorRequiredFieldLabel(
+                                            title: AppConstants.Authenticator.Editor.uri
+                                        )
+                                    }
+                                    ControlGroup {
+                                        Button(
+                                            AppConstants.Authenticator.Editor.paste,
+                                            action: pasteURI
+                                        )
+                                        Button(
+                                            AppConstants.Authenticator.Editor.parse,
+                                            action: parseURI
+                                        )
+                                    }
                                 }
-                                ControlGroup {
-                                    Button(AppConstants.Authenticator.Editor.paste, action: pasteURI)
-                                    Button(AppConstants.Authenticator.Editor.parse, action: parseURI)
-                                }
+                                AuthenticatorFieldError(message: fieldErrors.uri)
                             }
                         } else {
-                            HStack {
-                                TextField(text: $secret) {
-                                    AuthenticatorRequiredFieldLabel(
-                                        title: AppConstants.Authenticator.Editor.base32Secret
-                                    )
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    TextField(text: $secret) {
+                                        AuthenticatorRequiredFieldLabel(
+                                            title: AppConstants.Authenticator.Editor.base32Secret
+                                        )
+                                    }
+                                    .font(.system(.body, design: .monospaced))
+                                    ControlGroup {
+                                        Button(
+                                            AppConstants.Authenticator.Editor.paste,
+                                            action: pasteSecret
+                                        )
+                                        Button(
+                                            AppConstants.Authenticator.Editor.generate,
+                                            action: generateSecret
+                                        )
+                                    }
                                 }
-                                .font(.system(.body, design: .monospaced))
-                                ControlGroup {
-                                    Button(
-                                        AppConstants.Authenticator.Editor.paste,
-                                        action: pasteSecret
-                                    )
-                                    Button(
-                                        AppConstants.Authenticator.Editor.generate,
-                                        action: generateSecret
-                                    )
-                                }
+                                AuthenticatorFieldError(message: fieldErrors.secret)
                             }
                         }
                     }
@@ -151,8 +187,8 @@ struct EntryEditorView: View {
             }
             .formStyle(.grouped)
 
-            if !errorMessage.isEmpty {
-                Text(errorMessage)
+            if !globalError.isEmpty {
+                Text(globalError)
                     .foregroundColor(.red)
                     .font(.caption)
                     .padding(.horizontal)
@@ -162,6 +198,8 @@ struct EntryEditorView: View {
 
             HStack {
                 Spacer()
+                Button(AppConstants.Common.cancel) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
                 Button(
                     entry == nil
                         ? AppConstants.Authenticator.Editor.addTitle
@@ -169,7 +207,7 @@ struct EntryEditorView: View {
                     action: beginSave
                 )
                     .disabled(!canSave || isSaving)
-                    .keyboardShortcut(.return)
+                    .keyboardShortcut(.defaultAction)
             }
             .padding()
         }
@@ -203,15 +241,20 @@ struct EntryEditorView: View {
         .onChange(of: uriString) { _, _ in
             secret = ""
             parsedURI = nil
-            errorMessage = ""
+            fieldErrors.uri = ""
+            globalError = ""
         }
         .onChange(of: showURIInput) { _, usesURI in
             parsedURI = nil
-            errorMessage = ""
+            fieldErrors = EntryFieldErrors()
+            globalError = ""
             if usesURI {
                 secret = ""
             }
         }
+        .onChange(of: serviceName) { _, _ in fieldErrors.serviceName = "" }
+        .onChange(of: username) { _, _ in fieldErrors.username = "" }
+        .onChange(of: secret) { _, _ in fieldErrors.secret = "" }
     }
 
     private var canSave: Bool {
@@ -222,7 +265,8 @@ struct EntryEditorView: View {
         if showURIInput {
             return parsedURI != nil
         }
-        return hasServiceName && (try? Base32Codec.decode(secret)) != nil
+        return hasServiceName
+            && !secret.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private func parseURI() {
@@ -235,11 +279,11 @@ struct EntryEditorView: View {
             algorithm = parsed.algorithm
             digits = parsed.digits
             period = parsed.period
-            errorMessage = ""
+            fieldErrors = EntryFieldErrors()
+            globalError = ""
         } catch {
-            let message = error.localizedDescription
             parsedURI = nil
-            errorMessage = message
+            fieldErrors.uri = error.localizedDescription
         }
     }
 
@@ -251,16 +295,20 @@ struct EntryEditorView: View {
     private func pasteSecret() {
         guard let value = NSPasteboard.general.string(forType: .string) else { return }
         secret = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        errorMessage = ""
+        fieldErrors.secret = ""
     }
 
     private func generateSecret() {
         let key = SymmetricKey(size: .bits256)
         secret = key.withUnsafeBytes { Base32Codec.encode(Data($0)) }
-        errorMessage = ""
+        fieldErrors.secret = ""
     }
 
     private func beginSave() {
+        fieldErrors = EntryFieldErrors()
+        globalError = ""
+        guard validateFields() else { return }
+
         isSaving = true
         Task {
             defer { isSaving = false }
@@ -287,8 +335,47 @@ struct EntryEditorView: View {
                 }
                 dismiss()
             } catch {
-                errorMessage = error.localizedDescription
+                globalError = error.localizedDescription
             }
         }
+    }
+
+    private func validateFields() -> Bool {
+        if entry == nil && showURIInput {
+            guard parsedURI != nil else {
+                fieldErrors.uri = AppConstants.Authenticator.OTPAuth.invalidURI
+                return false
+            }
+            return true
+        }
+
+        let trimmedServiceName = serviceName.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+        if trimmedServiceName.isEmpty {
+            fieldErrors.serviceName = AppConstants.Authenticator.Editor.invalidServiceName
+            return false
+        }
+        if trimmedServiceName.contains(AppConstants.Authenticator.labelSeparator) {
+            fieldErrors.serviceName =
+                AppConstants.Authenticator.Editor.serviceNameContainsSeparator
+            return false
+        }
+
+        if username.contains(AppConstants.Authenticator.labelSeparator) {
+            fieldErrors.username = AppConstants.Authenticator.Editor.usernameContainsSeparator
+            return false
+        }
+
+        if entry == nil {
+            do {
+                _ = try Base32Codec.decode(secret)
+            } catch {
+                fieldErrors.secret = error.localizedDescription
+                return false
+            }
+        }
+
+        return true
     }
 }

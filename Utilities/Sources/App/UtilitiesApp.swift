@@ -1,36 +1,6 @@
 import AppKit
 import SwiftUI
 
-private struct SubTrackCommandContext {
-    let canCreateProject: Bool
-    let createProject: () -> Void
-}
-
-private struct SubTrackCommandContextKey: FocusedValueKey {
-    typealias Value = SubTrackCommandContext
-}
-
-private extension FocusedValues {
-    var subTrackCommandContext: SubTrackCommandContext? {
-        get { self[SubTrackCommandContextKey.self] }
-        set { self[SubTrackCommandContextKey.self] = newValue }
-    }
-}
-
-private struct SubTrackCommands: Commands {
-    @FocusedValue(\.subTrackCommandContext) private var context
-
-    var body: some Commands {
-        CommandGroup(replacing: .newItem) {
-            Button(AppConstants.Application.newProject) {
-                context?.createProject()
-            }
-            .keyboardShortcut(AppConstants.Application.newProjectShortcut)
-            .disabled(context?.canCreateProject != true)
-        }
-    }
-}
-
 @main
 @MainActor
 struct UtilitiesApp: App {
@@ -58,9 +28,6 @@ struct UtilitiesApp: App {
                 )
         }
         .windowStyle(.titleBar)
-        .commands {
-            SubTrackCommands()
-        }
 
         Window(
             AppConstants.Application.authenticatorName,
@@ -85,13 +52,6 @@ private struct SubTrackRootView: View {
             if let model {
                 SubTrackContentView()
                     .environment(model)
-                    .focusedSceneValue(
-                        \.subTrackCommandContext,
-                        SubTrackCommandContext(
-                            canCreateProject: model.canCreateProject,
-                            createProject: { model.presentedSheet = .editor(nil) }
-                        )
-                    )
             } else {
                 ProgressView(AppConstants.Application.loadingSubTrack)
                     .onAppear {

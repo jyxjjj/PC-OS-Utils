@@ -34,10 +34,6 @@ final class AppModel {
         initializeStore()
     }
 
-    var canCreateProject: Bool {
-        store != nil && presentedSheet == nil
-    }
-
     func initializeStore() {
         do {
             let store = try SubTrackStore()
