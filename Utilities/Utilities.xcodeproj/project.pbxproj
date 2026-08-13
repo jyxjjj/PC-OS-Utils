@@ -6,6 +6,31 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		50C0DE04302AC32C00AADDCA /* Verify Release Bundle */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 50C0DE06302AC32C00AADDCA /* Build configuration list for PBXAggregateTarget "Verify Release Bundle" */;
+			buildPhases = (
+				50C0DE01302AC32C00AADDCA /* Verify Release Bundle */,
+			);
+			dependencies = (
+				50C0DE03302AC32C00AADDCA /* PBXTargetDependency */,
+			);
+			name = "Verify Release Bundle";
+			productName = "Verify Release Bundle";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		50C0DE02302AC32C00AADDCA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 50692A32302AC32B00AADDCA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 50692A39302AC32B00AADDCA;
+			remoteInfo = "DESMG Utilities";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		50692A3A302AC32B00AADDCA /* DESMG Utilities.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DESMG Utilities.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -100,6 +125,7 @@
 			projectRoot = "";
 			targets = (
 				50692A39302AC32B00AADDCA /* DESMG Utilities */,
+				50C0DE04302AC32C00AADDCA /* Verify Release Bundle */,
 			);
 		};
 /* End PBXProject section */
@@ -114,6 +140,30 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		50C0DE01302AC32C00AADDCA /* Verify Release Bundle */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/BuildScripts/verify-release-bundle.sh",
+			);
+			name = "Verify Release Bundle";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "/bin/bash \"${SRCROOT}/BuildScripts/verify-release-bundle.sh\" \"${BUILT_PRODUCTS_DIR}/${AUDITED_APP_BUNDLE_NAME}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		50692A36302AC32B00AADDCA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -123,6 +173,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		50C0DE03302AC32C00AADDCA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 50692A39302AC32B00AADDCA /* DESMG Utilities */;
+			targetProxy = 50C0DE02302AC32C00AADDCA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		50692A43302AC32C00AADDCA /* Debug */ = {
@@ -223,12 +281,15 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				COPY_PHASE_STRIP = YES;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "";
+				DEPLOYMENT_POSTPROCESSING = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -240,8 +301,28 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = (
+					"$(inherited)",
+					"-file-prefix-map",
+					"$(SRCROOT)=.",
+					"-file-prefix-map",
+					"$(BUILD_DIR)=/BUILD",
+					"-file-prefix-map",
+					"$(OBJROOT)=/BUILD",
+					"-file-prefix-map",
+					"$(PROJECT_TEMP_DIR)=/BUILD",
+					"-file-prefix-map",
+					"$(DERIVED_FILES_DIR)=/BUILD",
+					"-file-compilation-dir",
+					/BUILD,
+				);
 				SDKROOT = macosx;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = all;
+				STRIP_SWIFT_SYMBOLS = YES;
+				STRIPFLAGS = "-S -x -T";
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_SERIALIZE_DEBUGGING_OPTIONS = NO;
 			};
 			name = Release;
 		};
@@ -309,6 +390,24 @@
 			};
 			name = Release;
 		};
+		50C0DE07302AC32C00AADDCA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				AUDITED_APP_BUNDLE_NAME = "DESMG Utilities.app";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		50C0DE08302AC32C00AADDCA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				AUDITED_APP_BUNDLE_NAME = "DESMG Utilities.app";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -326,6 +425,15 @@
 			buildConfigurations = (
 				50692A46302AC32C00AADDCA /* Debug */,
 				50692A47302AC32C00AADDCA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		50C0DE06302AC32C00AADDCA /* Build configuration list for PBXAggregateTarget "Verify Release Bundle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				50C0DE07302AC32C00AADDCA /* Debug */,
+				50C0DE08302AC32C00AADDCA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
