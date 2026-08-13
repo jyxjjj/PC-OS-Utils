@@ -365,9 +365,8 @@ nonisolated enum AppConstants {
             static let currencyChangeTitle = "切换币种会清空金额"
             static let changeAndClear = "切换并清空"
             static let noCurrencyConversion = "订阅管理功能不会自动换汇。"
-            static let subscriptionNotesMinimumHeight = 72.0
-            static let subscriptionNotesIdealHeight = 132.0
-            static let subscriptionNotesMaximumHeight = 180.0
+            static let subscriptionNotesMinimumLines = 3
+            static let subscriptionNotesMaximumLines = 8
             static let subscriptionMinimumWidth = 600.0
             static let subscriptionMinimumHeight = 360.0
             static let subscriptionIdealHeight = 640.0

@@ -14,10 +14,10 @@ private struct SubTrackRequiredFieldLabel: View {
 }
 
 private struct SubTrackFieldError: View {
-    let message: String
+    let message: String?
 
     var body: some View {
-        if !message.isEmpty {
+        if let message {
             Text(message)
                 .font(.caption)
                 .foregroundStyle(.red)
@@ -25,16 +25,9 @@ private struct SubTrackFieldError: View {
     }
 }
 
-private struct SubTrackFieldErrors {
-    var name = ""
-    var category = ""
-    var extensionDays = ""
-    var channel = ""
-    var notes = ""
-    var currency = ""
-    var officialPrice = ""
-    var thirdPartyPrice = ""
-    var reminderDays = ""
+private struct SubTrackPresentedFieldError {
+    let field: SubTrackInputField
+    let message: String
 }
 
 // 文本框负责固定格式，弹出式 DatePicker 负责日历选择。
@@ -147,7 +140,7 @@ struct SubscriptionEditorView: View {
     let subscription: Subscription?
     private let initialDraft: SubscriptionDraft
     @State private var draft: SubscriptionDraft
-    @State private var fieldErrors = SubTrackFieldErrors()
+    @State private var fieldError: SubTrackPresentedFieldError?
     @State private var errorMessage = ""
     @State private var confirmDiscard = false
     @State private var pendingCurrency: String?
@@ -179,21 +172,21 @@ struct SubscriptionEditorView: View {
             Form {
                 Section(AppConstants.SubTrack.Editor.basicInformation) {
                     VStack(alignment: .leading) {
-                        TextField(text: $draft.name) {
+                        TextField(text: validatedBinding(\.name, field: .name)) {
                             SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.name)
                         }
-                        SubTrackFieldError(message: fieldErrors.name)
+                        SubTrackFieldError(message: errorMessage(for: .name))
                     }
                     VStack(alignment: .leading) {
                         TextField(
-                            text: $draft.category,
+                            text: validatedBinding(\.category, field: .category),
                             prompt: Text(AppConstants.SubTrack.Editor.categoryPrompt)
                         ) {
                             SubTrackRequiredFieldLabel(
                                 title: AppConstants.SubTrack.Editor.category
                             )
                         }
-                        SubTrackFieldError(message: fieldErrors.category)
+                        SubTrackFieldError(message: errorMessage(for: .category))
                     }
                     LabeledContent {
                         EditorDateField(selection: $draft.expiry)
@@ -203,12 +196,15 @@ struct SubscriptionEditorView: View {
                         )
                     }
                     VStack(alignment: .leading) {
-                        TextField(value: $draft.extensionDays, format: .number) {
+                        TextField(
+                            value: validatedBinding(\.extensionDays, field: .extensionDays),
+                            format: .number
+                        ) {
                             SubTrackRequiredFieldLabel(
                                 title: AppConstants.SubTrack.Editor.extensionDays
                             )
                         }
-                        SubTrackFieldError(message: fieldErrors.extensionDays)
+                        SubTrackFieldError(message: errorMessage(for: .extensionDays))
                     }
                     Picker(selection: $draft.priority) {
                         ForEach(SubscriptionPriority.allCases) { Text($0.localizedName).tag($0) }
@@ -218,22 +214,21 @@ struct SubscriptionEditorView: View {
                     VStack(alignment: .leading) {
                         TextField(
                             AppConstants.SubTrack.Editor.purchaseChannel,
-                            text: $draft.channel
+                            text: validatedBinding(\.channel, field: .channel)
                         )
-                        SubTrackFieldError(message: fieldErrors.channel)
+                        SubTrackFieldError(message: errorMessage(for: .channel))
                     }
                     VStack(alignment: .leading) {
-                        Text(AppConstants.SubTrack.Editor.notes)
-                        TextEditor(text: $draft.notes)
-                            .frame(
-                                minHeight:
-                                    AppConstants.SubTrack.Editor.subscriptionNotesMinimumHeight,
-                                idealHeight:
-                                    AppConstants.SubTrack.Editor.subscriptionNotesIdealHeight,
-                                maxHeight:
-                                    AppConstants.SubTrack.Editor.subscriptionNotesMaximumHeight
-                            )
-                        SubTrackFieldError(message: fieldErrors.notes)
+                        TextField(
+                            AppConstants.SubTrack.Editor.notes,
+                            text: validatedBinding(\.notes, field: .notes),
+                            axis: .vertical
+                        )
+                        .lineLimit(
+                            AppConstants.SubTrack.Editor.subscriptionNotesMinimumLines ...
+                                AppConstants.SubTrack.Editor.subscriptionNotesMaximumLines
+                        )
+                        SubTrackFieldError(message: errorMessage(for: .notes))
                     }
                 }
                 Section(AppConstants.SubTrack.Editor.priceAndReminder) {
@@ -247,31 +242,37 @@ struct SubscriptionEditorView: View {
                                 title: AppConstants.SubTrack.Editor.currency
                             )
                         }
-                        SubTrackFieldError(message: fieldErrors.currency)
+                        SubTrackFieldError(message: errorMessage(for: .currency))
                     }
                     VStack(alignment: .leading) {
                         TextField(
                             AppConstants.SubTrack.Editor.officialPrice,
-                            value: $draft.officialPrice,
+                            value: validatedBinding(\.officialPrice, field: .officialPrice),
                             format: .number
                         )
-                        SubTrackFieldError(message: fieldErrors.officialPrice)
+                        SubTrackFieldError(message: errorMessage(for: .officialPrice))
                     }
                     VStack(alignment: .leading) {
                         TextField(
                             AppConstants.SubTrack.Editor.thirdPartyPrice,
-                            value: $draft.thirdPartyReference,
+                            value: validatedBinding(
+                                \.thirdPartyReference,
+                                field: .thirdPartyPrice
+                            ),
                             format: .number
                         )
-                        SubTrackFieldError(message: fieldErrors.thirdPartyPrice)
+                        SubTrackFieldError(message: errorMessage(for: .thirdPartyPrice))
                     }
                     VStack(alignment: .leading) {
-                        TextField(value: $draft.reminderDays, format: .number) {
+                        TextField(
+                            value: validatedBinding(\.reminderDays, field: .reminderDays),
+                            format: .number
+                        ) {
                             SubTrackRequiredFieldLabel(
                                 title: AppConstants.SubTrack.Editor.reminderDays
                             )
                         }
-                        SubTrackFieldError(message: fieldErrors.reminderDays)
+                        SubTrackFieldError(message: errorMessage(for: .reminderDays))
                     }
                 }
                 if !errorMessage.isEmpty {
@@ -310,23 +311,15 @@ struct SubscriptionEditorView: View {
                     draft.currency = currency
                     draft.officialPrice = nil
                     draft.thirdPartyReference = nil
+                    clearFieldError(for: .currency)
+                    clearFieldError(for: .officialPrice)
+                    clearFieldError(for: .thirdPartyPrice)
                 }
                 pendingCurrency = nil
             }
         } message: {
             Text(AppConstants.SubTrack.Editor.noCurrencyConversion)
         }
-        .onChange(of: draft.name) { _, _ in fieldErrors.name = "" }
-        .onChange(of: draft.category) { _, _ in fieldErrors.category = "" }
-        .onChange(of: draft.extensionDays) { _, _ in fieldErrors.extensionDays = "" }
-        .onChange(of: draft.channel) { _, _ in fieldErrors.channel = "" }
-        .onChange(of: draft.notes) { _, _ in fieldErrors.notes = "" }
-        .onChange(of: draft.currency) { _, _ in fieldErrors.currency = "" }
-        .onChange(of: draft.officialPrice) { _, _ in fieldErrors.officialPrice = "" }
-        .onChange(of: draft.thirdPartyReference) { _, _ in
-            fieldErrors.thirdPartyPrice = ""
-        }
-        .onChange(of: draft.reminderDays) { _, _ in fieldErrors.reminderDays = "" }
     }
 
     private var currencyBinding: Binding<String> {
@@ -334,8 +327,35 @@ struct SubscriptionEditorView: View {
             guard currency != draft.currency else { return }
             // 已填写金额时先确认，防止换币种后数值含义出错。
             if draft.hasMoney { pendingCurrency = currency }
-            else { draft.currency = currency }
+            else {
+                draft.currency = currency
+                clearFieldError(for: .currency)
+            }
         })
+    }
+
+    private func validatedBinding<Value>(
+        _ keyPath: WritableKeyPath<SubscriptionDraft, Value>,
+        field: SubTrackInputField
+    ) -> Binding<Value> {
+        Binding(
+            get: { draft[keyPath: keyPath] },
+            set: { value in
+                draft[keyPath: keyPath] = value
+                clearFieldError(for: field)
+            }
+        )
+    }
+
+    private func errorMessage(for field: SubTrackInputField) -> String? {
+        guard fieldError?.field == field else { return nil }
+        return fieldError?.message
+    }
+
+    private func clearFieldError(for field: SubTrackInputField) {
+        if fieldError?.field == field {
+            fieldError = nil
+        }
     }
 
     private func requestClose() {
@@ -343,23 +363,13 @@ struct SubscriptionEditorView: View {
     }
 
     private func save() {
-        fieldErrors = SubTrackFieldErrors()
+        fieldError = nil
         errorMessage = ""
         do {
             try model.saveSubscription(draft.input(), subscription: subscription)
             dismiss()
         } catch SubTrackError.invalidInput(let field, let message) {
-            switch field {
-            case .name: fieldErrors.name = message
-            case .category: fieldErrors.category = message
-            case .extensionDays: fieldErrors.extensionDays = message
-            case .channel: fieldErrors.channel = message
-            case .notes: fieldErrors.notes = message
-            case .currency: fieldErrors.currency = message
-            case .officialPrice: fieldErrors.officialPrice = message
-            case .thirdPartyPrice: fieldErrors.thirdPartyPrice = message
-            case .reminderDays: fieldErrors.reminderDays = message
-            }
+            fieldError = SubTrackPresentedFieldError(field: field, message: message)
         } catch {
             errorMessage = error.localizedDescription
         }

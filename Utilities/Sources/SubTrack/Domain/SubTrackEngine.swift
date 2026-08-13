@@ -1,7 +1,7 @@
 import Foundation
 
 // 业务层会抛出的错误。
-nonisolated enum SubTrackInputField: Sendable {
+nonisolated enum SubTrackInputField: Equatable, Sendable {
     case name
     case category
     case channel
