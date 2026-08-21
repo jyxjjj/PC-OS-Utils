@@ -17,8 +17,10 @@ struct AuthenticatorContentView: View {
                         AppConstants.Authenticator.Unlock.unavailable,
                         systemImage: "exclamationmark.triangle"
                     )
+                    .font(AppConstants.Typography.h3.bold())
                 } description: {
                     Text(initializationError)
+                        .font(AppConstants.Typography.p)
                 } actions: {
                     Button(AppConstants.Authenticator.Unlock.retry) { appState.initialize() }
                 }
@@ -32,25 +34,19 @@ struct AuthenticatorContentView: View {
         .disabled(isUnlocking)
         .overlay {
             if isUnlocking {
-                ZStack {
-                    Rectangle()
-                        .fill(.black.opacity(AppConstants.Authenticator.Unlock.overlayOpacity))
-                        .ignoresSafeArea()
-                    ProgressView(
-                        appState.isConfigured
-                            ? AppConstants.Authenticator.Unlock.unlocking
-                            : AppConstants.Authenticator.Unlock.creatingStore
-                    )
-                        .controlSize(.large)
-                        .padding(AppConstants.Authenticator.Unlock.progressPadding)
-                        .background(
-                            .regularMaterial,
-                            in: RoundedRectangle(
-                                cornerRadius: AppConstants.Authenticator.Unlock.progressCornerRadius
-                            )
+                ProgressView(
+                    appState.isConfigured
+                        ? AppConstants.Authenticator.Unlock.unlocking
+                        : AppConstants.Authenticator.Unlock.creatingStore
+                )
+                    .controlSize(.large)
+                    .padding(AppConstants.Authenticator.Unlock.progressPadding)
+                    .glassEffect(
+                        .regular,
+                        in: .rect(
+                            cornerRadius: AppConstants.Authenticator.Unlock.progressCornerRadius
                         )
-                }
-                .allowsHitTesting(true)
+                    )
             }
         }
     }
@@ -58,7 +54,7 @@ struct AuthenticatorContentView: View {
     private var unlockView: some View {
         VStack(spacing: AppConstants.Authenticator.Unlock.contentSpacing) {
             Image(systemName: "lock.shield")
-                .font(.system(size: AppConstants.Authenticator.Unlock.lockSymbolSize))
+                .font(AppConstants.Typography.h1)
                 .foregroundStyle(.cyan)
 
             VStack(spacing: AppConstants.Authenticator.Unlock.titleSpacing) {
@@ -67,13 +63,13 @@ struct AuthenticatorContentView: View {
                         ? AppConstants.Authenticator.Unlock.unlockTitle
                         : AppConstants.Authenticator.Unlock.setupTitle
                 )
-                    .font(.title2.bold())
+                    .font(AppConstants.Typography.h2.bold())
                 Text(
                     appState.isConfigured
                         ? AppConstants.Authenticator.Unlock.configuredDescription
                         : AppConstants.Authenticator.Unlock.setupDescription
                 )
-                .font(.callout)
+                .font(AppConstants.Typography.p)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             }
@@ -94,7 +90,7 @@ struct AuthenticatorContentView: View {
                             .onSubmit(beginUnlock)
                         if !confirmationError.isEmpty {
                             Text(confirmationError)
-                                .font(.caption)
+                                .font(AppConstants.Typography.span)
                                 .foregroundStyle(.red)
                         }
                     }
@@ -103,7 +99,7 @@ struct AuthenticatorContentView: View {
 
             if !errorMessage.isEmpty {
                 Text(errorMessage)
-                    .font(.caption)
+                    .font(AppConstants.Typography.span)
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
             }

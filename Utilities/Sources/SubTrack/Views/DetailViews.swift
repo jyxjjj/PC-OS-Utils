@@ -34,7 +34,7 @@ struct SubscriptionDetailView: View {
         let view = SubscriptionRules.view(for: subscription, now: model.clock)
         return HStack(alignment: .top, spacing: AppConstants.SubTrack.Detail.headerSpacing) {
             Text(String(subscription.name.prefix(1)).uppercased())
-                .font(.system(size: AppConstants.SubTrack.Detail.iconFontSize, weight: .bold))
+                .font(AppConstants.Typography.h3.bold())
                 .frame(
                     width: AppConstants.SubTrack.Detail.iconSize,
                     height: AppConstants.SubTrack.Detail.iconSize
@@ -45,7 +45,7 @@ struct SubscriptionDetailView: View {
                     RoundedRectangle(cornerRadius: AppConstants.SubTrack.Detail.iconCornerRadius)
                 )
             VStack(alignment: .leading, spacing: AppConstants.SubTrack.Detail.titleSpacing) {
-                Text(subscription.name).font(.title2.bold())
+                Text(subscription.name).font(AppConstants.Typography.h2.bold())
                 Text(
                     String(
                         format: AppConstants.SubTrack.Detail.projectMetadataFormat,
@@ -56,14 +56,16 @@ struct SubscriptionDetailView: View {
                             : subscription.channel
                     )
                 )
+                    .font(AppConstants.Typography.span)
                     .foregroundStyle(.secondary)
                 HStack(spacing: AppConstants.SubTrack.Detail.metadataSpacing) {
                     Label(
                         subscription.expiresAt.localizedDate,
                         systemImage: "calendar"
                     )
+                    .font(AppConstants.Typography.span)
                     Text(view.status.localizedName)
-                        .font(.caption.weight(.bold))
+                        .font(AppConstants.Typography.span.weight(.bold))
                         .foregroundStyle(view.status.color)
                         .padding(
                             .horizontal,
@@ -85,9 +87,10 @@ struct SubscriptionDetailView: View {
                     SubscriptionRules.decisionPrice(for: subscription)?
                         .money(currency: subscription.currency) ?? AppConstants.Common.emDash
                 )
-                    .font(.title3.bold())
+                    .font(AppConstants.Typography.h4.bold())
                 Text(SubscriptionRules.decisionPriceKind(for: subscription))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(AppConstants.Typography.span)
+                    .foregroundStyle(.secondary)
             }
         }
         .subTrackCard()
@@ -95,7 +98,8 @@ struct SubscriptionDetailView: View {
 
     private func configuration() -> some View {
         VStack(alignment: .leading, spacing: AppConstants.SubTrack.Detail.gridSpacing) {
-            Text(AppConstants.SubTrack.Detail.projectConfiguration).font(.headline)
+            Text(AppConstants.SubTrack.Detail.projectConfiguration)
+                .font(AppConstants.Typography.h4.bold())
             LazyVGrid(
                 columns: [
                     GridItem(
@@ -146,8 +150,10 @@ struct SubscriptionDetailView: View {
             alignment: .leading,
             spacing: AppConstants.SubTrack.Detail.rowSpacing
         ) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
-            Text(value).font(.subheadline.weight(.semibold))
+            Text(label)
+                .font(AppConstants.Typography.span)
+                .foregroundStyle(.secondary)
+            Text(value).font(AppConstants.Typography.p.weight(.semibold))
         }
     }
 }

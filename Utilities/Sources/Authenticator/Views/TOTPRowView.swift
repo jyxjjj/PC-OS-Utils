@@ -38,16 +38,19 @@ struct TOTPRowView: View {
                     height: AppConstants.Authenticator.Row.iconSize
                 )
             Text(entry.serviceName.prefix(1).uppercased())
-                .font(.headline)
+                .font(AppConstants.Typography.p.weight(.semibold))
                 .foregroundColor(.accentColor)
         }
     }
 
     private var info: some View {
         VStack(alignment: .leading, spacing: AppConstants.Authenticator.Row.infoSpacing) {
-            Text(entry.serviceName).font(.headline)
+            Text(entry.serviceName)
+                .font(AppConstants.Typography.h5.weight(.semibold))
             if !entry.username.isEmpty {
-                Text(entry.username).font(.caption).foregroundColor(.secondary)
+                Text(entry.username)
+                    .font(AppConstants.Typography.span)
+                    .foregroundColor(.secondary)
             }
         }
     }
@@ -88,7 +91,7 @@ struct TOTPRowView: View {
                         value: fraction
                     )
                 Text(String(Int(timeRemaining)))
-                    .font(.caption.weight(.medium))
+                    .font(AppConstants.Typography.span.weight(.medium))
                     .foregroundColor(.secondary)
             }
             .frame(
@@ -160,7 +163,7 @@ private struct TOTPCodeText: View, Equatable {
             date: date
         )
         Text(formattedCode(code))
-            .font(.system(.title2, design: .monospaced).bold())
+            .font(AppConstants.Typography.h3.monospaced().bold())
             .foregroundColor(isExpiring ? .red : .primary)
             .animation(.none, value: code)
     }

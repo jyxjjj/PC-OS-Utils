@@ -1,6 +1,17 @@
 import Foundation
+import SwiftUI
 
 nonisolated enum AppConstants {
+    nonisolated enum Typography {
+        static let h1 = Font.system(size: 28)
+        static let h2 = Font.system(size: 24)
+        static let h3 = Font.system(size: 20)
+        static let h4 = Font.system(size: 16)
+        static let h5 = Font.system(size: 14)
+        static let p = Font.system(size: 12)
+        static let span = Font.system(size: 10)
+    }
+
     nonisolated enum Common {
         static let requiredFieldMarker = "*"
         static let cancel = "取消"
@@ -18,16 +29,20 @@ nonisolated enum AppConstants {
         static let launcherWindowID = "launcher"
         static let subTrackWindowID = "subtrack"
         static let authenticatorWindowID = "authenticator"
+        static let codexWindowID = "codex-context"
         static let subTrackName = "订阅管理"
         static let authenticatorName = "身份验证器"
+        static let codexName = "Codex Context"
         static let loadingSubTrack = "正在载入订阅管理…"
 
-        static let launcherMinimumWidth = 680.0
+        static let launcherMinimumWidth = 980.0
         static let launcherMinimumHeight = 430.0
         static let subTrackMinimumWidth = 980.0
         static let subTrackMinimumHeight = 680.0
         static let authenticatorMinimumWidth = 400.0
         static let authenticatorMinimumHeight = 500.0
+        static let codexMinimumWidth = 920.0
+        static let codexMinimumHeight = 620.0
     }
 
     nonisolated enum Launcher {
@@ -42,6 +57,8 @@ nonisolated enum AppConstants {
         static let subTrackDescription = "管理订阅、到期提醒与支出预测。"
         static let authenticatorTitle = "身份验证器"
         static let authenticatorDescription = "管理本地加密的 TOTP 验证码。"
+        static let codexTitle = "Codex Context"
+        static let codexDescription = "查看 Codex task、SubAgent 与 token 使用情况。"
         static let license = "GNU Affero General Public License v3.0"
         static let launch = "启动"
 
@@ -56,11 +73,79 @@ nonisolated enum AppConstants {
         static let topPadding = 16.0
         static let gradientBlueOpacity = 0.2
         static let cardContentSpacing = 14.0
-        static let cardSymbolSize = 34.0
         static let cardMinimumSpacer = 4.0
         static let cardPadding = 22.0
         static let cardMinimumHeight = 234.0
         static let cardCornerRadius = 18.0
+    }
+
+    nonisolated enum Codex {
+        static let bookmarkKey = "CodexSessionsDirectoryBookmark"
+        static let directoryName = ".codex"
+        static let sessionIndexFile = "session_index.jsonl"
+        static let allowedSessionDirectories = ["archived_sessions", "sessions"]
+        static let refreshInterval = 10.0
+        static let warningThreshold = 0.6
+        static let dangerThreshold = 0.8
+        static let sidebarMinimumWidth = 260.0
+        static let sidebarIdealWidth = 320.0
+        static let unreadableFilesMaximumHeight = 180.0
+        static let detailMaximumWidth = 760.0
+        static let statusIndicatorSize = 8.0
+
+        static let authorizationTitle = "选择 ~/.codex 目录"
+        static let authorizationDescription = "请选择 ~/.codex；应用读取 session_index.jsonl、sessions 和 archived_sessions。"
+        static let directorySelectionFailed = "目录选择失败"
+        static let accessDenied = "无法访问已授权的 ~/.codex 目录，请重新选择。"
+        static let invalidDirectory = "只能选择当前用户的 %@ 目录\n当前选择的文件夹：%@"
+        static let cannotEnumerate = "无法枚举 Codex sessions 目录。"
+        static let loadFailed = "无法载入 Codex session 索引"
+        static let noSessions = "没有 Codex session"
+        static let noSessionsDescription = "session_index.jsonl 中没有可读取的对话索引。"
+        static let chooseDirectory = "选择目录"
+        static let refresh = "刷新"
+        static let mainTasks = "Main Tasks"
+        static let subagents = "SubAgent"
+        static let unreadableFiles = "%d 个 JSONL 文件无法载入"
+        static let missingFileAttributes = "无法读取文件属性"
+        static let missingSessionMetadata = "缺少有效 session metadata"
+        static let invalidSessionFileName = "JSONL 文件名格式无效"
+        static let sessionFileNotFound = "找不到所选对话的 Session JSONL 文件"
+        static let selectSession = "选择一个 session"
+        static let currentContext = "当前 Context"
+        static let contextUsed = "已使用 %@ Tokens"
+        static let contextRemaining = "剩余 %@ / %@ Tokens"
+        static let notAvailable = "N/A"
+        static let wholeSession = "整个 Session 总计"
+        static let lastTurn = "最近一轮"
+        static let tokenComposition = "Token 构成"
+        static let totalComposition = "总 Token：输入 / 输出"
+        static let inputComposition = "输入构成"
+        static let outputComposition = "输出构成"
+        static let input = "输入"
+        static let cachedInput = "缓存输入"
+        static let cacheWrite = "缓存写入"
+        static let uncachedInput = "非缓存输入"
+        static let output = "输出"
+        static let reasoning = "推理"
+        static let regularOutput = "非推理输出"
+        static let total = "总计"
+        static let sessionDetails = "Session 详情"
+        static let status = "状态"
+        static let model = "Model"
+        static let reasoningEffort = "推理强度"
+        static let role = "角色"
+        static let workingDirectory = "工作目录"
+        static let unloaded = "未加载"
+        static let completedTurns = "已完成轮次"
+        static let duration = "累计耗时"
+        static let averageTTFT = "平均 TTFT"
+        static let lastActivity = "最后活动"
+        static let parseErrors = "JSONL 解析错误"
+        static let running = "运行中"
+        static let completed = "已完成"
+        static let interrupted = "已中断"
+        static let shutdown = "已关闭"
     }
 
     nonisolated enum Authenticator {
@@ -155,11 +240,9 @@ nonisolated enum AppConstants {
             static let createAndLaunch = "创建并启动"
             static let mismatchedKeys = "两次输入的密钥不一致"
 
-            static let overlayOpacity = 0.22
             static let progressPadding = 24.0
             static let progressCornerRadius = 12.0
             static let contentSpacing = 18.0
-            static let lockSymbolSize = 46.0
             static let titleSpacing = 6.0
             static let fieldsSpacing = 12.0
             static let maximumContentWidth = 320.0
@@ -253,7 +336,6 @@ nonisolated enum AppConstants {
             static let descriptionCornerRadius = 8.0
             static let width = 440.0
             static let height = 300.0
-            static let overlayOpacity = 0.22
             static let progressPadding = 24.0
             static let progressCornerRadius = 12.0
         }
@@ -380,8 +462,6 @@ nonisolated enum AppConstants {
             static let noticeMilliseconds: Int64 = 3_500
             static let noticeHorizontalPadding = 18.0
             static let noticeVerticalPadding = 11.0
-            static let noticeShadowRadius = 8.0
-            static let noticeShadowY = 3.0
             static let noticeBottomPadding = 18.0
             static let noticeAnimationDuration = 0.2
             static let sectionSpacing = 18.0
@@ -468,7 +548,6 @@ nonisolated enum AppConstants {
             static let contentPadding = 22.0
             static let maximumWidth = 980.0
             static let headerSpacing = 18.0
-            static let iconFontSize = 28.0
             static let iconSize = 58.0
             static let iconOpacity = 0.15
             static let iconCornerRadius = 13.0

@@ -10,6 +10,7 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.launcherWindowID
         ) {
             LauncherView()
+                .font(AppConstants.Typography.p)
                 .frame(
                     minWidth: AppConstants.Application.launcherMinimumWidth,
                     minHeight: AppConstants.Application.launcherMinimumHeight
@@ -22,6 +23,7 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.subTrackWindowID
         ) {
             SubTrackRootView()
+                .font(AppConstants.Typography.p)
                 .frame(
                     minWidth: AppConstants.Application.subTrackMinimumWidth,
                     minHeight: AppConstants.Application.subTrackMinimumHeight
@@ -34,12 +36,42 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.authenticatorWindowID
         ) {
             AuthenticatorRootView()
+                .font(AppConstants.Typography.p)
                 .frame(
                     minWidth: AppConstants.Application.authenticatorMinimumWidth,
                     minHeight: AppConstants.Application.authenticatorMinimumHeight
                 )
         }
         .windowStyle(.titleBar)
+
+        Window(
+            AppConstants.Application.codexName,
+            id: AppConstants.Application.codexWindowID
+        ) {
+            CodexRootView()
+                .font(AppConstants.Typography.p)
+                .frame(
+                    minWidth: AppConstants.Application.codexMinimumWidth,
+                    minHeight: AppConstants.Application.codexMinimumHeight
+                )
+        }
+        .windowStyle(.titleBar)
+    }
+}
+
+private struct CodexRootView: View {
+    @Environment(\.openWindow) private var openWindow
+    @State private var model = CodexAppModel()
+
+    var body: some View {
+        CodexContentView()
+            .environment(model)
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
+                ($0.object as! NSWindow).preventsApplicationTerminationWhenModal = false
+            }
+            .onDisappear {
+                openWindow(id: AppConstants.Application.launcherWindowID)
+            }
     }
 }
 

@@ -24,7 +24,7 @@ struct ExportImportView: View {
     var body: some View {
         VStack(spacing: AppConstants.Authenticator.Transfer.stackSpacing) {
             HStack {
-                Text(title).font(.headline)
+                Text(title).font(AppConstants.Typography.h3.bold())
                 Spacer()
             }
             .padding()
@@ -47,7 +47,6 @@ struct ExportImportView: View {
                         )
                     }
                 }
-                .font(.caption)
                 .foregroundColor(.secondary)
                 .padding()
                 .background(
@@ -86,7 +85,7 @@ struct ExportImportView: View {
                 if !message.isEmpty {
                     Text(message)
                         .foregroundColor(isSuccess ? .green : .red)
-                        .font(.caption)
+                        .font(AppConstants.Typography.span)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
@@ -110,23 +109,15 @@ struct ExportImportView: View {
         .interactiveDismissDisabled(isImporting)
         .overlay {
             if isImporting {
-                ZStack {
-                    Rectangle()
-                        .fill(
-                            .black.opacity(AppConstants.Authenticator.Transfer.overlayOpacity)
+                ProgressView(AppConstants.Authenticator.Transfer.importing)
+                    .controlSize(.large)
+                    .padding(AppConstants.Authenticator.Transfer.progressPadding)
+                    .glassEffect(
+                        .regular,
+                        in: .rect(
+                            cornerRadius: AppConstants.Authenticator.Transfer.progressCornerRadius
                         )
-                        .ignoresSafeArea()
-                    ProgressView(AppConstants.Authenticator.Transfer.importing)
-                        .controlSize(.large)
-                        .padding(AppConstants.Authenticator.Transfer.progressPadding)
-                        .background(
-                            .regularMaterial,
-                            in: RoundedRectangle(
-                                cornerRadius: AppConstants.Authenticator.Transfer.progressCornerRadius
-                            )
-                        )
-                }
-                .allowsHitTesting(true)
+                    )
             }
         }
         .fileExporter(

@@ -10,7 +10,7 @@ private struct AuthenticatorRequiredFieldLabel: View {
             Text(title)
             Text(AppConstants.Common.requiredFieldMarker).foregroundStyle(.red)
         }
-        .font(.body)
+        .font(AppConstants.Typography.p)
     }
 }
 
@@ -20,7 +20,7 @@ private struct AuthenticatorFieldError: View {
     var body: some View {
         if let message {
             Text(message)
-                .font(.caption)
+                .font(AppConstants.Typography.span)
                 .foregroundStyle(.red)
         }
     }
@@ -74,7 +74,7 @@ struct EntryEditorView: View {
                         ? AppConstants.Authenticator.Editor.addTitle
                         : AppConstants.Authenticator.Editor.editTitle
                 )
-                .font(.headline)
+                .font(AppConstants.Typography.h3.bold())
                 Spacer()
             }
             .padding()
@@ -82,7 +82,7 @@ struct EntryEditorView: View {
             Divider()
 
             Form {
-                Section(AppConstants.Authenticator.Editor.accountSection) {
+                Section {
                     VStack(alignment: .leading) {
                         TextField(
                             text: validatedBinding($serviceName, field: .serviceName),
@@ -101,11 +101,14 @@ struct EntryEditorView: View {
                         )
                         AuthenticatorFieldError(message: errorMessage(for: .username))
                     }
+                } header: {
+                    Text(AppConstants.Authenticator.Editor.accountSection)
+                        .font(AppConstants.Typography.h5.bold())
                 }
                 .disabled(entry == nil && showURIInput)
 
                 if entry == nil {
-                    Section(AppConstants.Authenticator.Editor.secretSection) {
+                    Section {
                         Toggle(AppConstants.Authenticator.Editor.useURI, isOn: $showURIInput)
 
                         if showURIInput {
@@ -141,7 +144,7 @@ struct EntryEditorView: View {
                                             title: AppConstants.Authenticator.Editor.base32Secret
                                         )
                                     }
-                                    .font(.system(.body, design: .monospaced))
+                                    .font(AppConstants.Typography.p.monospaced())
                                     ControlGroup {
                                         Button(
                                             AppConstants.Authenticator.Editor.paste,
@@ -156,10 +159,13 @@ struct EntryEditorView: View {
                                 AuthenticatorFieldError(message: errorMessage(for: .secret))
                             }
                         }
+                    } header: {
+                        Text(AppConstants.Authenticator.Editor.secretSection)
+                            .font(AppConstants.Typography.h5.bold())
                     }
                 }
 
-                Section(AppConstants.Authenticator.Editor.optionsSection) {
+                Section {
                     Picker(selection: $algorithm) {
                         ForEach(TOTPAlgorithm.allCases, id: \.self) { algorithm in
                             Text(algorithm.rawValue).tag(algorithm)
@@ -194,6 +200,9 @@ struct EntryEditorView: View {
                             )
                         )
                     }
+                } header: {
+                    Text(AppConstants.Authenticator.Editor.optionsSection)
+                        .font(AppConstants.Typography.h5.bold())
                 }
                 .disabled(entry == nil && showURIInput)
             }
@@ -202,7 +211,7 @@ struct EntryEditorView: View {
             if !globalError.isEmpty {
                 Text(globalError)
                     .foregroundColor(.red)
-                    .font(.caption)
+                    .font(AppConstants.Typography.span)
                     .padding(.horizontal)
             }
 
@@ -241,13 +250,12 @@ struct EntryEditorView: View {
                 ProgressView(AppConstants.Authenticator.Editor.saving)
                     .controlSize(.large)
                     .padding(AppConstants.Authenticator.Editor.progressPadding)
-                    .background(
-                        .regularMaterial,
-                        in: RoundedRectangle(
+                    .glassEffect(
+                        .regular,
+                        in: .rect(
                             cornerRadius: AppConstants.Authenticator.Editor.progressCornerRadius
                         )
                     )
-                    .allowsHitTesting(true)
             }
         }
         .onChange(of: uriString) { _, _ in

@@ -54,14 +54,18 @@ struct TOTPListView: View {
             }
             .navigationTitle(AppConstants.Authenticator.List.title)
             .toolbar {
-                ToolbarItemGroup(placement: .automatic) {
+                ToolbarItem(placement: .automatic) {
                     Button { appState.lock() } label: {
                         Label(
                             AppConstants.Authenticator.List.lock,
                             systemImage: "lock"
                         )
                     }
+                }
 
+                ToolbarSpacer(.fixed)
+
+                ToolbarItemGroup(placement: .automatic) {
                     Button { transferMode = .export } label: {
                         Label(
                             AppConstants.Authenticator.List.export,
@@ -134,8 +138,10 @@ struct TOTPListView: View {
                 AppConstants.Authenticator.List.emptyTitle,
                 systemImage: "key.slash"
             )
+            .font(AppConstants.Typography.h3.bold())
         } description: {
             Text(AppConstants.Authenticator.List.emptyDescription)
+                .font(AppConstants.Typography.p)
         } actions: {
             Button(AppConstants.Authenticator.List.addAccount) { showAddEntry = true }
         }

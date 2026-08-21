@@ -9,7 +9,7 @@ private struct SubTrackRequiredFieldLabel: View {
             Text(title)
             Text(AppConstants.Common.requiredFieldMarker).foregroundStyle(.red)
         }
-        .font(.body)
+        .font(AppConstants.Typography.p)
     }
 }
 
@@ -19,7 +19,7 @@ private struct SubTrackFieldError: View {
     var body: some View {
         if let message {
             Text(message)
-                .font(.caption)
+                .font(AppConstants.Typography.span)
                 .foregroundStyle(.red)
         }
     }
@@ -162,7 +162,7 @@ struct SubscriptionEditorView: View {
                         ? AppConstants.SubTrack.Editor.addTitle
                         : AppConstants.SubTrack.Editor.editTitle
                 )
-                .font(.headline)
+                .font(AppConstants.Typography.h3.bold())
                 Spacer()
             }
             .padding()
@@ -170,7 +170,7 @@ struct SubscriptionEditorView: View {
             Divider()
 
             Form {
-                Section(AppConstants.SubTrack.Editor.basicInformation) {
+                Section {
                     VStack(alignment: .leading) {
                         TextField(text: validatedBinding(\.name, field: .name)) {
                             SubTrackRequiredFieldLabel(title: AppConstants.SubTrack.Editor.name)
@@ -230,8 +230,11 @@ struct SubscriptionEditorView: View {
                         )
                         SubTrackFieldError(message: errorMessage(for: .notes))
                     }
+                } header: {
+                    Text(AppConstants.SubTrack.Editor.basicInformation)
+                        .font(AppConstants.Typography.h5.bold())
                 }
-                Section(AppConstants.SubTrack.Editor.priceAndReminder) {
+                Section {
                     VStack(alignment: .leading) {
                         Picker(selection: currencyBinding) {
                             ForEach(AppConstants.SubTrack.currencyCodes, id: \.self) {
@@ -274,9 +277,16 @@ struct SubscriptionEditorView: View {
                         }
                         SubTrackFieldError(message: errorMessage(for: .reminderDays))
                     }
+                } header: {
+                    Text(AppConstants.SubTrack.Editor.priceAndReminder)
+                        .font(AppConstants.Typography.h5.bold())
                 }
                 if !errorMessage.isEmpty {
-                    Section { Text(errorMessage).foregroundStyle(.red) }
+                    Section {
+                        Text(errorMessage)
+                            .font(AppConstants.Typography.span)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
             .formStyle(.grouped)

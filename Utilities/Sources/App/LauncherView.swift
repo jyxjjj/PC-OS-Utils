@@ -28,8 +28,9 @@ struct LauncherView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: AppConstants.Launcher.titleSpacing) {
                     Text(AppConstants.Launcher.title)
-                        .font(.largeTitle.bold())
+                        .font(AppConstants.Typography.h1.bold())
                     Text(AppConstants.Launcher.subtitle)
+                        .font(AppConstants.Typography.p)
                         .foregroundStyle(.secondary)
                 }
 
@@ -66,6 +67,13 @@ struct LauncherView: View {
                         tint: .cyan,
                         windowID: AppConstants.Application.authenticatorWindowID
                     )
+                    toolCard(
+                        title: AppConstants.Launcher.codexTitle,
+                        description: AppConstants.Launcher.codexDescription,
+                        symbol: "gauge.with.dots.needle.67percent",
+                        tint: .purple,
+                        windowID: AppConstants.Application.codexWindowID
+                    )
                 }
                 .frame(maxHeight: .infinity)
             }
@@ -75,11 +83,12 @@ struct LauncherView: View {
 
             HStack(alignment: .center, spacing: AppConstants.Launcher.footerSpacing) {
                 Text(AppConstants.Launcher.license)
-                    .font(.headline)
+                    .font(AppConstants.Typography.span)
 
                 Spacer(minLength: AppConstants.Launcher.footerMinimumSpacer)
 
                 Text(version)
+                    .font(AppConstants.Typography.span)
                     .foregroundStyle(.secondary)
             }
         }
@@ -119,12 +128,12 @@ struct LauncherView: View {
         } label: {
             VStack(alignment: .leading, spacing: AppConstants.Launcher.cardContentSpacing) {
                 Image(systemName: symbol)
-                    .font(.system(size: AppConstants.Launcher.cardSymbolSize, weight: .semibold))
+                    .font(AppConstants.Typography.h1.weight(.semibold))
                     .foregroundStyle(tint)
                 Text(title)
-                    .font(.title2.bold())
+                    .font(AppConstants.Typography.h3.bold())
                 Text(description)
-                    .font(.callout)
+                    .font(AppConstants.Typography.p)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: AppConstants.Launcher.cardMinimumSpacer)
@@ -132,7 +141,7 @@ struct LauncherView: View {
                     AppConstants.Launcher.launch,
                     systemImage: "arrow.up.forward.app"
                 )
-                    .font(.headline)
+                    .font(AppConstants.Typography.p.weight(.semibold))
                     .foregroundStyle(tint)
             }
             .padding(AppConstants.Launcher.cardPadding)
