@@ -17,10 +17,10 @@ struct AuthenticatorContentView: View {
                         AppConstants.Authenticator.Unlock.unavailable,
                         systemImage: "exclamationmark.triangle"
                     )
-                    .font(AppConstants.Typography.h3.bold())
+                    .font(.title2.bold())
                 } description: {
                     Text(initializationError)
-                        .font(AppConstants.Typography.p)
+                        .font(.body)
                 } actions: {
                     Button(AppConstants.Authenticator.Unlock.retry) { appState.initialize() }
                 }
@@ -54,7 +54,7 @@ struct AuthenticatorContentView: View {
     private var unlockView: some View {
         VStack(spacing: AppConstants.Authenticator.Unlock.contentSpacing) {
             Image(systemName: "lock.shield")
-                .font(AppConstants.Typography.h1)
+                .font(.largeTitle)
                 .foregroundStyle(.cyan)
 
             VStack(spacing: AppConstants.Authenticator.Unlock.titleSpacing) {
@@ -63,13 +63,13 @@ struct AuthenticatorContentView: View {
                         ? AppConstants.Authenticator.Unlock.unlockTitle
                         : AppConstants.Authenticator.Unlock.setupTitle
                 )
-                    .font(AppConstants.Typography.h2.bold())
+                    .font(.title.bold())
                 Text(
                     appState.isConfigured
                         ? AppConstants.Authenticator.Unlock.configuredDescription
                         : AppConstants.Authenticator.Unlock.setupDescription
                 )
-                .font(AppConstants.Typography.p)
+                .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             }
@@ -90,7 +90,7 @@ struct AuthenticatorContentView: View {
                             .onSubmit(beginUnlock)
                         if !confirmationError.isEmpty {
                             Text(confirmationError)
-                                .font(AppConstants.Typography.span)
+                                .font(.caption)
                                 .foregroundStyle(.red)
                         }
                     }
@@ -99,7 +99,7 @@ struct AuthenticatorContentView: View {
 
             if !errorMessage.isEmpty {
                 Text(errorMessage)
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .foregroundStyle(.red)
                     .multilineTextAlignment(.center)
             }

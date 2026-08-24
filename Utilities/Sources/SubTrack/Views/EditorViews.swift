@@ -9,7 +9,7 @@ private struct SubTrackRequiredFieldLabel: View {
             Text(title)
             Text(AppConstants.Common.requiredFieldMarker).foregroundStyle(.red)
         }
-        .font(AppConstants.Typography.p)
+        .font(.body)
     }
 }
 
@@ -19,7 +19,7 @@ private struct SubTrackFieldError: View {
     var body: some View {
         if let message {
             Text(message)
-                .font(AppConstants.Typography.span)
+                .font(.caption)
                 .foregroundStyle(.red)
         }
     }
@@ -162,7 +162,7 @@ struct SubscriptionEditorView: View {
                         ? AppConstants.SubTrack.Editor.addTitle
                         : AppConstants.SubTrack.Editor.editTitle
                 )
-                .font(AppConstants.Typography.h3.bold())
+                .font(.title2.bold())
                 Spacer()
             }
             .padding()
@@ -232,7 +232,7 @@ struct SubscriptionEditorView: View {
                     }
                 } header: {
                     Text(AppConstants.SubTrack.Editor.basicInformation)
-                        .font(AppConstants.Typography.h5.bold())
+                        .font(.headline.bold())
                 }
                 Section {
                     VStack(alignment: .leading) {
@@ -279,12 +279,12 @@ struct SubscriptionEditorView: View {
                     }
                 } header: {
                     Text(AppConstants.SubTrack.Editor.priceAndReminder)
-                        .font(AppConstants.Typography.h5.bold())
+                        .font(.headline.bold())
                 }
                 if !errorMessage.isEmpty {
                     Section {
                         Text(errorMessage)
-                            .font(AppConstants.Typography.span)
+                            .font(.caption)
                             .foregroundStyle(.red)
                     }
                 }

@@ -28,9 +28,9 @@ struct LauncherView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: AppConstants.Launcher.titleSpacing) {
                     Text(AppConstants.Launcher.title)
-                        .font(AppConstants.Typography.h1.bold())
+                        .font(.largeTitle.bold())
                     Text(AppConstants.Launcher.subtitle)
-                        .font(AppConstants.Typography.p)
+                        .font(.body)
                         .foregroundStyle(.secondary)
                 }
 
@@ -83,12 +83,12 @@ struct LauncherView: View {
 
             HStack(alignment: .center, spacing: AppConstants.Launcher.footerSpacing) {
                 Text(AppConstants.Launcher.license)
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
 
                 Spacer(minLength: AppConstants.Launcher.footerMinimumSpacer)
 
                 Text(version)
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
@@ -128,12 +128,12 @@ struct LauncherView: View {
         } label: {
             VStack(alignment: .leading, spacing: AppConstants.Launcher.cardContentSpacing) {
                 Image(systemName: symbol)
-                    .font(AppConstants.Typography.h1.weight(.semibold))
+                    .font(.largeTitle.weight(.semibold))
                     .foregroundStyle(tint)
                 Text(title)
-                    .font(AppConstants.Typography.h3.bold())
+                    .font(.title2.bold())
                 Text(description)
-                    .font(AppConstants.Typography.p)
+                    .font(.body)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: AppConstants.Launcher.cardMinimumSpacer)
@@ -141,7 +141,7 @@ struct LauncherView: View {
                     AppConstants.Launcher.launch,
                     systemImage: "arrow.up.forward.app"
                 )
-                    .font(AppConstants.Typography.p.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .foregroundStyle(tint)
             }
             .padding(AppConstants.Launcher.cardPadding)

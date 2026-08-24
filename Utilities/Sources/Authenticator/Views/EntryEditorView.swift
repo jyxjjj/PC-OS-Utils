@@ -10,7 +10,7 @@ private struct AuthenticatorRequiredFieldLabel: View {
             Text(title)
             Text(AppConstants.Common.requiredFieldMarker).foregroundStyle(.red)
         }
-        .font(AppConstants.Typography.p)
+        .font(.body)
     }
 }
 
@@ -20,7 +20,7 @@ private struct AuthenticatorFieldError: View {
     var body: some View {
         if let message {
             Text(message)
-                .font(AppConstants.Typography.span)
+                .font(.caption)
                 .foregroundStyle(.red)
         }
     }
@@ -74,7 +74,7 @@ struct EntryEditorView: View {
                         ? AppConstants.Authenticator.Editor.addTitle
                         : AppConstants.Authenticator.Editor.editTitle
                 )
-                .font(AppConstants.Typography.h3.bold())
+                .font(.title2.bold())
                 Spacer()
             }
             .padding()
@@ -103,7 +103,7 @@ struct EntryEditorView: View {
                     }
                 } header: {
                     Text(AppConstants.Authenticator.Editor.accountSection)
-                        .font(AppConstants.Typography.h5.bold())
+                        .font(.headline.bold())
                 }
                 .disabled(entry == nil && showURIInput)
 
@@ -144,7 +144,7 @@ struct EntryEditorView: View {
                                             title: AppConstants.Authenticator.Editor.base32Secret
                                         )
                                     }
-                                    .font(AppConstants.Typography.p.monospaced())
+                                    .font(.body.monospaced())
                                     ControlGroup {
                                         Button(
                                             AppConstants.Authenticator.Editor.paste,
@@ -161,7 +161,7 @@ struct EntryEditorView: View {
                         }
                     } header: {
                         Text(AppConstants.Authenticator.Editor.secretSection)
-                            .font(AppConstants.Typography.h5.bold())
+                            .font(.headline.bold())
                     }
                 }
 
@@ -202,7 +202,7 @@ struct EntryEditorView: View {
                     }
                 } header: {
                     Text(AppConstants.Authenticator.Editor.optionsSection)
-                        .font(AppConstants.Typography.h5.bold())
+                        .font(.headline.bold())
                 }
                 .disabled(entry == nil && showURIInput)
             }
@@ -211,7 +211,7 @@ struct EntryEditorView: View {
             if !globalError.isEmpty {
                 Text(globalError)
                     .foregroundColor(.red)
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .padding(.horizontal)
             }
 

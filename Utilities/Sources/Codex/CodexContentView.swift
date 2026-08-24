@@ -59,7 +59,7 @@ struct CodexContentView: View {
                             }
                         } header: {
                             Text(AppConstants.Codex.mainTasks)
-                                .font(AppConstants.Typography.h5.bold())
+                                .font(.headline.bold())
                         }
                     }
                     .navigationSplitViewColumnWidth(
@@ -97,7 +97,7 @@ struct CodexContentView: View {
                                                             Text(file.url.lastPathComponent)
                                                                 .lineLimit(1)
                                                             Text(file.reason)
-                                                                .font(AppConstants.Typography.span)
+                                                                .font(.caption)
                                                                 .foregroundStyle(.secondary)
                                                                 .lineLimit(2)
                                                         }
@@ -141,7 +141,7 @@ struct CodexContentView: View {
                                     AppConstants.Codex.selectSession,
                                     systemImage: "sidebar.left"
                                 )
-                                .font(AppConstants.Typography.h3.bold())
+                                .font(.title2.bold())
                             }
                         }
                     }
@@ -188,11 +188,11 @@ struct CodexContentView: View {
     ) -> some View {
         ContentUnavailableView {
             Label(title, systemImage: symbol)
-                .font(AppConstants.Typography.h3.bold())
+                .font(.title2.bold())
                 .foregroundStyle(isError ? Color.red : Color.primary)
         } description: {
             Text(description)
-                .font(AppConstants.Typography.p)
+                .font(.body)
         } actions: {
             Button(AppConstants.Codex.chooseDirectory) {
                 isChoosingDirectory = true
@@ -213,14 +213,14 @@ private struct SessionRow: View {
                 .foregroundStyle(statusColor)
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayName)
-                    .font(AppConstants.Typography.p.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .lineLimit(1)
                 Text(entry.id)
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Text(entry.updatedAt.formatted(Date.ISO8601FormatStyle(timeZone: .current)))
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
             }
@@ -278,10 +278,10 @@ private struct SessionDetail: View {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(title)
-                        .font(AppConstants.Typography.h2.bold())
+                        .font(.title.bold())
                         .textSelection(.enabled)
                     Text(metadata)
-                        .font(AppConstants.Typography.span)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
                 }
@@ -314,7 +314,7 @@ private struct SessionDetail: View {
                     .padding(.vertical, 4)
                 } label: {
                     Text(AppConstants.Codex.sessionDetails)
-                        .font(AppConstants.Typography.h4.bold())
+                        .font(.title3.bold())
                 }
 
                 if !descendants.isEmpty {
@@ -345,7 +345,7 @@ private struct SessionDetail: View {
                         Spacer()
                         Text(ratio.formatted(.percent.precision(.fractionLength(1))))
                     }
-                    .font(AppConstants.Typography.p)
+                    .font(.body)
                     .foregroundStyle(.secondary)
                     Text(
                         String(
@@ -354,7 +354,7 @@ private struct SessionDetail: View {
                             tokenCount(window)
                         )
                     )
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 4)
@@ -366,7 +366,7 @@ private struct SessionDetail: View {
             }
         } label: {
             Text(AppConstants.Codex.currentContext)
-                .font(AppConstants.Typography.h4.bold())
+                .font(.title3.bold())
         }
     }
 
@@ -425,16 +425,16 @@ private struct SessionDetail: View {
                                 .padding(.top, 5)
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(child.session.subagentTitle)
-                                    .font(AppConstants.Typography.h5.weight(.semibold))
+                                    .font(.headline.weight(.semibold))
                                 Text(child.session.id)
-                                    .font(AppConstants.Typography.span.monospaced())
+                                    .font(.caption.monospaced())
                                     .foregroundStyle(.secondary)
                                 HStack {
                                     Text(child.session.fileTimestamp)
                                     Spacer()
                                     Text(statusName(child.session.status))
                                 }
-                                .font(AppConstants.Typography.span)
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
                             }
                         }
@@ -444,7 +444,7 @@ private struct SessionDetail: View {
             .padding(.vertical, 4)
         } label: {
             Text(AppConstants.Codex.subagents)
-                .font(AppConstants.Typography.h4.bold())
+                .font(.title3.bold())
         }
     }
 
@@ -503,7 +503,7 @@ private struct SessionDetail: View {
             .padding(.vertical, 4)
         } label: {
             Text(title)
-                .font(AppConstants.Typography.h4.bold())
+                .font(.title3.bold())
         }
     }
 
@@ -517,10 +517,10 @@ private struct SessionDetail: View {
         return VStack(spacing: 8) {
             HStack {
                 Text(title)
-                    .font(AppConstants.Typography.p.weight(.semibold))
+                    .font(.body.weight(.semibold))
                 Spacer()
                 Text(tokenCount(total) + " Tokens")
-                    .font(AppConstants.Typography.p.monospacedDigit())
+                    .font(.body.monospacedDigit())
             }
             GeometryReader { proxy in
                 let spacing = CGFloat(max(visibleSegments.count - 1, 0)) * 2
@@ -549,12 +549,12 @@ private struct SessionDetail: View {
                         .foregroundStyle(.secondary)
                     Spacer()
                     Text(tokenCount(segment.value) + " Tokens")
-                        .font(AppConstants.Typography.p.monospacedDigit())
+                        .font(.body.monospacedDigit())
                     Text(
                         (total == 0 ? 0 : Double(segment.value) / Double(total))
                             .formatted(.percent.precision(.fractionLength(1)))
                     )
-                    .font(AppConstants.Typography.span.monospacedDigit())
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(width: 56, alignment: .trailing)
                 }

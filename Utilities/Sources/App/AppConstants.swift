@@ -1,17 +1,6 @@
 import Foundation
-import SwiftUI
 
 nonisolated enum AppConstants {
-    nonisolated enum Typography {
-        static let h1 = Font.system(size: 28)
-        static let h2 = Font.system(size: 24)
-        static let h3 = Font.system(size: 20)
-        static let h4 = Font.system(size: 16)
-        static let h5 = Font.system(size: 14)
-        static let p = Font.system(size: 12)
-        static let span = Font.system(size: 10)
-    }
-
     nonisolated enum Common {
         static let requiredFieldMarker = "*"
         static let cancel = "取消"

@@ -138,10 +138,10 @@ struct TOTPListView: View {
                 AppConstants.Authenticator.List.emptyTitle,
                 systemImage: "key.slash"
             )
-            .font(AppConstants.Typography.h3.bold())
+            .font(.title2.bold())
         } description: {
             Text(AppConstants.Authenticator.List.emptyDescription)
-                .font(AppConstants.Typography.p)
+                .font(.body)
         } actions: {
             Button(AppConstants.Authenticator.List.addAccount) { showAddEntry = true }
         }

@@ -20,13 +20,13 @@ struct SubTrackContentView: View {
                         AppConstants.SubTrack.Content.loadFailed,
                         systemImage: "exclamationmark.triangle"
                     )
-                    .font(AppConstants.Typography.h3.bold())
+                    .font(.title2.bold())
                 } description: {
                     Text(
                         model.initializationError
                             ?? AppConstants.SubTrack.Content.createDatabaseFailed
                     )
-                    .font(AppConstants.Typography.p)
+                    .font(.body)
                 } actions: {
                     Button(AppConstants.SubTrack.Content.retry) { model.initializeStore() }
                 }
@@ -55,7 +55,7 @@ struct SubTrackContentView: View {
         .overlay(alignment: .bottom) {
             if !model.notice.isEmpty {
                 Text(model.notice)
-                    .font(AppConstants.Typography.p.weight(.semibold))
+                    .font(.body.weight(.semibold))
                     .padding(.horizontal, AppConstants.SubTrack.Content.noticeHorizontalPadding)
                     .padding(.vertical, AppConstants.SubTrack.Content.noticeVerticalPadding)
                     .foregroundStyle(.primary)
@@ -215,14 +215,14 @@ private struct ProjectsPane: View {
                 spacing: AppConstants.SubTrack.Content.projectTitleSpacing
             ) {
                 Text(AppConstants.SubTrack.Content.subscriptions)
-                    .font(AppConstants.Typography.h4.bold())
+                    .font(.title3.bold())
                 Text(
                     String(
                         format: AppConstants.SubTrack.Content.sortedResultFormat,
                         filteredViews.count
                     )
                 )
-                    .font(AppConstants.Typography.span)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
@@ -234,10 +234,10 @@ private struct ProjectsPane: View {
                                 AppConstants.SubTrack.Content.noProjects,
                                 systemImage: "rectangle.stack"
                             )
-                            .font(AppConstants.Typography.h4.bold())
+                            .font(.title3.bold())
                         } description: {
                             Text(AppConstants.SubTrack.Content.noProjectsDescription)
-                                .font(AppConstants.Typography.p)
+                                .font(.body)
                         } actions: {
                             Button(AppConstants.SubTrack.Content.createProject) {
                                 model.presentedSheet = .editor(nil)
@@ -251,10 +251,10 @@ private struct ProjectsPane: View {
                                 AppConstants.SubTrack.Content.noMatches,
                                 systemImage: "line.3.horizontal.decrease.circle"
                             )
-                            .font(AppConstants.Typography.h4.bold())
+                            .font(.title3.bold())
                         } description: {
                             Text(AppConstants.SubTrack.Content.noMatchesDescription)
-                                .font(AppConstants.Typography.p)
+                                .font(.body)
                         } actions: {
                             Button(AppConstants.SubTrack.Content.clearFilter) {
                                 model.query = ""
@@ -293,14 +293,14 @@ private struct MetricCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.metricCardSpacing) {
             Text(title)
-                .font(AppConstants.Typography.p.weight(.semibold))
+                .font(.body.weight(.semibold))
                 .opacity(AppConstants.SubTrack.Content.metricTitleOpacity)
             Text(value)
-                .font(AppConstants.Typography.h3.bold())
+                .font(.title2.bold())
                 .lineLimit(AppConstants.SubTrack.Content.metricLineLimit)
                 .minimumScaleFactor(AppConstants.SubTrack.Content.metricMinimumScale)
             Text(note)
-                .font(AppConstants.Typography.span)
+                .font(.caption)
                 .opacity(AppConstants.SubTrack.Content.metricNoteOpacity)
         }
         .frame(
@@ -336,7 +336,7 @@ private struct SubscriptionRow: View {
             } label: {
                 HStack(spacing: AppConstants.SubTrack.Content.subscriptionRowSpacing) {
                     Text(String(item.name.prefix(1)).uppercased())
-                        .font(AppConstants.Typography.p.bold())
+                        .font(.body.bold())
                         .frame(
                             width: AppConstants.SubTrack.Content.rowIconSize,
                             height: AppConstants.SubTrack.Content.rowIconSize
@@ -356,9 +356,9 @@ private struct SubscriptionRow: View {
                     ) {
                         HStack(spacing: AppConstants.SubTrack.Content.prioritySpacing) {
                             Text(item.name)
-                                .font(AppConstants.Typography.h5.weight(.semibold))
+                                .font(.headline.weight(.semibold))
                             Text(item.priority.localizedName)
-                                .font(AppConstants.Typography.span.weight(.bold))
+                                .font(.caption.weight(.bold))
                                 .padding(
                                     .horizontal,
                                     AppConstants.SubTrack.Content.priorityHorizontalPadding
@@ -378,7 +378,7 @@ private struct SubscriptionRow: View {
                                 remainingText
                             )
                         )
-                            .font(AppConstants.Typography.span)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -390,13 +390,13 @@ private struct SubscriptionRow: View {
                             SubscriptionRules.decisionPrice(for: item)?
                                 .money(currency: item.currency) ?? AppConstants.Common.emDash
                         )
-                            .font(AppConstants.Typography.p.weight(.semibold))
+                            .font(.body.weight(.semibold))
                         Text(SubscriptionRules.decisionPriceKind(for: item))
-                            .font(AppConstants.Typography.span)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     Text(view.status.localizedName)
-                        .font(AppConstants.Typography.span.weight(.bold))
+                        .font(.caption.weight(.bold))
                         .foregroundStyle(view.status.color)
                         .padding(
                             .horizontal,
@@ -431,7 +431,7 @@ private struct SubscriptionRow: View {
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
-                    .font(AppConstants.Typography.h4)
+                    .font(.title3)
                     .frame(
                         width: AppConstants.SubTrack.Content.menuSize,
                         height: AppConstants.SubTrack.Content.menuSize
@@ -490,7 +490,7 @@ private struct ReminderCard: View {
 
         VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.reminderCardSpacing) {
             Text(AppConstants.SubTrack.Content.reminders)
-                .font(AppConstants.Typography.h4.bold())
+                .font(.title3.bold())
             if reminders.isEmpty {
                 Text(AppConstants.SubTrack.Content.noReminders).foregroundStyle(.secondary)
             } else {
@@ -507,7 +507,7 @@ private struct ReminderCard: View {
                                 view.subscription.name
                             )
                         )
-                            .font(AppConstants.Typography.span.weight(.bold))
+                            .font(.caption.weight(.bold))
                         Text(
                             view.status == .expired
                                 ? String(
@@ -520,7 +520,7 @@ private struct ReminderCard: View {
                                     view.subscription.expiresAt.localizedDate
                                 )
                         )
-                            .font(AppConstants.Typography.span)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -541,7 +541,7 @@ private struct ForecastCard: View {
 
         VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.forecastCardSpacing) {
             Text(AppConstants.SubTrack.Content.nextSixMonths)
-                .font(AppConstants.Typography.h4.bold())
+                .font(.title3.bold())
             if !hasTotals {
                 Text(AppConstants.SubTrack.Content.noForecast)
                     .foregroundStyle(.secondary)
@@ -577,12 +577,12 @@ private struct ForecastCard: View {
             ForEach(forecast.buckets) { bucket in
                 HStack {
                     Text(bucket.month)
-                        .font(AppConstants.Typography.span.monospacedDigit())
+                        .font(.caption.monospacedDigit())
                     Spacer()
                     Text(bucket.totals.isEmpty ? AppConstants.Common.emDash : bucket.totals.map {
                         $0.total.money(currency: $0.currency)
                     }.joined(separator: AppConstants.Common.itemSeparator))
-                    .font(AppConstants.Typography.span.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                 }
             }
         }

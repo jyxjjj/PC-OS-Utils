@@ -24,7 +24,7 @@ struct ExportImportView: View {
     var body: some View {
         VStack(spacing: AppConstants.Authenticator.Transfer.stackSpacing) {
             HStack {
-                Text(title).font(AppConstants.Typography.h3.bold())
+                Text(title).font(.title2.bold())
                 Spacer()
             }
             .padding()
@@ -85,7 +85,7 @@ struct ExportImportView: View {
                 if !message.isEmpty {
                     Text(message)
                         .foregroundColor(isSuccess ? .green : .red)
-                        .font(AppConstants.Typography.span)
+                        .font(.caption)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }

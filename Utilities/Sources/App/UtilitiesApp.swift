@@ -10,7 +10,7 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.launcherWindowID
         ) {
             LauncherView()
-                .font(AppConstants.Typography.p)
+                .font(.body)
                 .frame(
                     minWidth: AppConstants.Application.launcherMinimumWidth,
                     minHeight: AppConstants.Application.launcherMinimumHeight
@@ -23,7 +23,7 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.subTrackWindowID
         ) {
             SubTrackRootView()
-                .font(AppConstants.Typography.p)
+                .font(.body)
                 .frame(
                     minWidth: AppConstants.Application.subTrackMinimumWidth,
                     minHeight: AppConstants.Application.subTrackMinimumHeight
@@ -36,7 +36,7 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.authenticatorWindowID
         ) {
             AuthenticatorRootView()
-                .font(AppConstants.Typography.p)
+                .font(.body)
                 .frame(
                     minWidth: AppConstants.Application.authenticatorMinimumWidth,
                     minHeight: AppConstants.Application.authenticatorMinimumHeight
@@ -49,7 +49,7 @@ struct UtilitiesApp: App {
             id: AppConstants.Application.codexWindowID
         ) {
             CodexRootView()
-                .font(AppConstants.Typography.p)
+                .font(.body)
                 .frame(
                     minWidth: AppConstants.Application.codexMinimumWidth,
                     minHeight: AppConstants.Application.codexMinimumHeight
