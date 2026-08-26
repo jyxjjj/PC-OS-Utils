@@ -14,18 +14,31 @@ guard
     source == "HID" || [-1, 0, 1].contains(channel)
 else {
     fputs(
-        "Usage: DeviceBattery <HID|SP> <device-name> [-1|0|1]    (SP: -1=left, 0=case, 1=right)\n", stderr
-    )
+        "Usage: DeviceBattery <HID|SP> <device-name> [-1|0|1]    (SP: -1=left, 0=case, 1=right)\n",
+        stderr)
     exit(EX_USAGE)
 }
 
 func getHIDDevice() -> Int? {
-
-    let matching = IOServiceMatching("AppleDeviceManagementHIDEventService")
-
     var iterator: io_iterator_t = 0
 
-    IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator)
+    guard let matching = IOServiceMatching("AppleDeviceManagementHIDEventService") else {
+        return nil
+    }
+
+    guard
+        IOServiceGetMatchingServices(
+            kIOMainPortDefault,
+            matching,
+            &iterator
+        ) == KERN_SUCCESS
+    else {
+        return nil
+    }
+
+    defer {
+        IOObjectRelease(iterator)
+    }
 
     while true {
         let service = IOIteratorNext(iterator)
@@ -38,28 +51,46 @@ func getHIDDevice() -> Int? {
             IORegistryEntryCreateCFProperty(service, "Product" as CFString, kCFAllocatorDefault, 0)?
             .takeRetainedValue() as? String
 
-        if let product, product == target {
-            let battery =
-                IORegistryEntryCreateCFProperty(
-                    service,
-                    "BatteryPercent" as CFString,
-                    kCFAllocatorDefault,
-                    0
-                )?.takeRetainedValue() as? NSNumber
+        let transport =
+            IORegistryEntryCreateCFProperty(
+                service, "Transport" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue()
+            as? String
 
-            if let battery {
-                return battery.intValue
+        var matched = false
+
+        if transport == "Bluetooth" {
+            matched = product == target
+        }
+
+        if transport == "USB" {
+            if target.contains("Magic Trackpad"), product == "Magic Trackpad" {
+                matched = true
+            }
+
+            if target.contains("Magic Keyboard"),
+                product == "Magic Keyboard with Touch ID and Numeric Keypad"
+            {
+                matched = true
             }
         }
 
+        if matched {
+            let battery =
+                IORegistryEntryCreateCFProperty(
+                    service, "BatteryPercent" as CFString, kCFAllocatorDefault, 0)?
+                .takeRetainedValue() as? NSNumber
+
+            if let battery {
+                let value = battery.intValue
+                IOObjectRelease(service)
+                return value
+            }
+        }
         IOObjectRelease(service)
 
     }
 
-    IOObjectRelease(iterator)
-
     return nil
-
 }
 
 func getSPDevice(_ channel: Int) -> Int? {
@@ -90,6 +121,7 @@ func getSPDevice(_ channel: Int) -> Int? {
     else {
         return nil
     }
+
     for controller in bluetooth {
         let devices =
             (controller["device_connected"] as? [[String: Any]] ?? [])
@@ -101,18 +133,15 @@ func getSPDevice(_ channel: Int) -> Int? {
             }
 
             let left = Int(
-                (info["device_batteryLevelLeft"] as? String)?
-                    .filter(\.isNumber) ?? ""
+                (info["device_batteryLevelLeft"] as? String)?.filter(\.isNumber) ?? ""
             )
 
             let right = Int(
-                (info["device_batteryLevelRight"] as? String)?
-                    .filter(\.isNumber) ?? ""
+                (info["device_batteryLevelRight"] as? String)?.filter(\.isNumber) ?? ""
             )
 
             let `case` = Int(
-                (info["device_batteryLevelCase"] as? String)?
-                    .filter(\.isNumber) ?? ""
+                (info["device_batteryLevelCase"] as? String)?.filter(\.isNumber) ?? ""
             )
 
             return switch channel {
