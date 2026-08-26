@@ -13,9 +13,7 @@ guard
     !target.isEmpty,
     source == "HID" || [-1, 0, 1].contains(channel)
 else {
-    fputs(
-        "Usage: DeviceBattery <HID|SP> <device-name> [-1|0|1]    (SP: -1=left, 0=case, 1=right)\n",
-        stderr)
+    fputs("Usage: DeviceBattery <HID|SP> <device-name> [-1|0|1]    (SP: -1=left, 0=case, 1=right)\n", stderr)
     exit(EX_USAGE)
 }
 
@@ -26,19 +24,12 @@ func getHIDDevice() -> Int? {
         return nil
     }
 
-    guard
-        IOServiceGetMatchingServices(
-            kIOMainPortDefault,
-            matching,
-            &iterator
-        ) == KERN_SUCCESS
+    guard IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator) == KERN_SUCCESS
     else {
         return nil
     }
 
-    defer {
-        IOObjectRelease(iterator)
-    }
+    defer { IOObjectRelease(iterator) }
 
     while true {
         let service = IOIteratorNext(iterator)
@@ -47,14 +38,9 @@ func getHIDDevice() -> Int? {
             break
         }
 
-        let product =
-            IORegistryEntryCreateCFProperty(service, "Product" as CFString, kCFAllocatorDefault, 0)?
-            .takeRetainedValue() as? String
+        let product = IORegistryEntryCreateCFProperty(service, "Product" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? String
 
-        let transport =
-            IORegistryEntryCreateCFProperty(
-                service, "Transport" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue()
-            as? String
+        let transport = IORegistryEntryCreateCFProperty(service, "Transport" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? String
 
         var matched = false
 
@@ -67,18 +53,13 @@ func getHIDDevice() -> Int? {
                 matched = true
             }
 
-            if target.contains("Magic Keyboard"),
-                product == "Magic Keyboard with Touch ID and Numeric Keypad"
-            {
+            if target.contains("Magic Keyboard"), product == "Magic Keyboard with Touch ID and Numeric Keypad" {
                 matched = true
             }
         }
 
         if matched {
-            let battery =
-                IORegistryEntryCreateCFProperty(
-                    service, "BatteryPercent" as CFString, kCFAllocatorDefault, 0)?
-                .takeRetainedValue() as? NSNumber
+            let battery = IORegistryEntryCreateCFProperty(service, "BatteryPercent" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? NSNumber
 
             if let battery {
                 let value = battery.intValue
