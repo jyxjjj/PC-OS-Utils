@@ -64,17 +64,19 @@ struct ExportImportView: View {
                                 AppConstants.Authenticator.Transfer.export,
                                 systemImage: "square.and.arrow.up"
                             )
-                                .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                     } else {
-                        Button { showImport = true } label: {
+                        Button {
+                            showImport = true
+                        } label: {
                             Label(
                                 AppConstants.Authenticator.Transfer.`import`,
                                 systemImage: "square.and.arrow.down"
                             )
-                                .frame(maxWidth: .infinity)
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
@@ -127,12 +129,12 @@ struct ExportImportView: View {
             defaultFilename: AppConstants.Authenticator.Transfer.exportFilename
         ) { result in
             switch result {
-            case .success:
-                message = AppConstants.Authenticator.Transfer.exportSucceeded
-                isSuccess = true
-            case .failure(let error):
-                message = error.localizedDescription
-                isSuccess = false
+                case .success:
+                    message = AppConstants.Authenticator.Transfer.exportSucceeded
+                    isSuccess = true
+                case .failure(let error):
+                    message = error.localizedDescription
+                    isSuccess = false
             }
             exportDocument = nil
         }
@@ -146,15 +148,15 @@ struct ExportImportView: View {
 
     private var title: String {
         switch mode {
-        case .export: AppConstants.Authenticator.Transfer.exportTitle
-        case .import: AppConstants.Authenticator.Transfer.importTitle
+            case .export: AppConstants.Authenticator.Transfer.exportTitle
+            case .import: AppConstants.Authenticator.Transfer.importTitle
         }
     }
 
     private var description: String {
         switch mode {
-        case .export: AppConstants.Authenticator.Transfer.exportDescription
-        case .import: AppConstants.Authenticator.Transfer.importDescription
+            case .export: AppConstants.Authenticator.Transfer.exportDescription
+            case .import: AppConstants.Authenticator.Transfer.importDescription
         }
     }
 
@@ -193,7 +195,8 @@ struct ExportImportView: View {
 
                     let values = try url.resourceValues(forKeys: [.fileSizeKey])
                     if let fileSize = values.fileSize,
-                       fileSize > AppConstants.Authenticator.OTPAuth.maximumFileSize {
+                        fileSize > AppConstants.Authenticator.OTPAuth.maximumFileSize
+                    {
                         throw OTPAuthImportParser.ImportError.fileTooLarge
                     }
                     let data = try Data(contentsOf: url, options: .mappedIfSafe)

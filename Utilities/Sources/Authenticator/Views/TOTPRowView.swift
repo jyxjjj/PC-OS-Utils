@@ -106,8 +106,8 @@ struct TOTPRowView: View {
             Image(
                 systemName: copied ? "checkmark" : "doc.on.doc"
             )
-                .foregroundColor(copied ? .green : .secondary)
-                .frame(width: AppConstants.Authenticator.Row.copyButtonWidth)
+            .foregroundColor(copied ? .green : .secondary)
+            .frame(width: AppConstants.Authenticator.Row.copyButtonWidth)
         }
         .buttonStyle(.plain)
     }
@@ -169,8 +169,7 @@ private struct TOTPCodeText: View, Equatable {
     }
 
     private func formattedCode(_ code: String) -> String {
-        guard (AppConstants.Authenticator.minimumDigits ...
-               AppConstants.Authenticator.maximumDigits).contains(code.count) else {
+        guard (AppConstants.Authenticator.minimumDigits ... AppConstants.Authenticator.maximumDigits).contains(code.count) else {
             return code
         }
         let mid = code.index(code.startIndex, offsetBy: code.count / 2)

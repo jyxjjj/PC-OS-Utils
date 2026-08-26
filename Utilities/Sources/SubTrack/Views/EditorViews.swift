@@ -42,10 +42,10 @@ private struct EditorDateField: View {
                 value: $selection,
                 format: AppConstants.SubTrack.Formatting.editorDateFormat
             )
-                .labelsHidden()
-                .multilineTextAlignment(.trailing)
-                .monospacedDigit()
-                .frame(width: AppConstants.SubTrack.Editor.dateFieldWidth)
+            .labelsHidden()
+            .multilineTextAlignment(.trailing)
+            .monospacedDigit()
+            .frame(width: AppConstants.SubTrack.Editor.dateFieldWidth)
             Button {
                 showingPicker.toggle()
             } label: {
@@ -58,9 +58,9 @@ private struct EditorDateField: View {
                     selection: $selection,
                     displayedComponents: [.date]
                 )
-                    .datePickerStyle(.graphical)
-                    .labelsHidden()
-                    .padding()
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+                .padding()
             }
         }
     }
@@ -86,10 +86,12 @@ private struct SubscriptionDraft: Equatable {
         category = input.category
         expiry = input.expiresAt
         extensionDays = subscription == nil ? nil : input.extensionDays
-        officialPrice = input.officialPrice == AppConstants.SubTrack.Rules.minimumMoney
+        officialPrice =
+            input.officialPrice == AppConstants.SubTrack.Rules.minimumMoney
             ? nil
             : input.officialPrice
-        thirdPartyReference = input.thirdPartyReference == AppConstants.SubTrack.Rules.minimumMoney
+        thirdPartyReference =
+            input.thirdPartyReference == AppConstants.SubTrack.Rules.minimumMoney
             ? nil
             : input.thirdPartyReference
         channel = input.channel
@@ -225,8 +227,7 @@ struct SubscriptionEditorView: View {
                             axis: .vertical
                         )
                         .lineLimit(
-                            AppConstants.SubTrack.Editor.subscriptionNotesMinimumLines ...
-                                AppConstants.SubTrack.Editor.subscriptionNotesMaximumLines
+                            AppConstants.SubTrack.Editor.subscriptionNotesMinimumLines ... AppConstants.SubTrack.Editor.subscriptionNotesMaximumLines
                         )
                         SubTrackFieldError(message: errorMessage(for: .notes))
                     }
@@ -311,10 +312,13 @@ struct SubscriptionEditorView: View {
             Button(AppConstants.SubTrack.Editor.continueEditing, role: .cancel) {}
             Button(AppConstants.SubTrack.Editor.discard, role: .destructive) { dismiss() }
         }
-        .alert(AppConstants.SubTrack.Editor.currencyChangeTitle, isPresented: Binding(
-            get: { pendingCurrency != nil },
-            set: { if !$0 { pendingCurrency = nil } }
-        )) {
+        .alert(
+            AppConstants.SubTrack.Editor.currencyChangeTitle,
+            isPresented: Binding(
+                get: { pendingCurrency != nil },
+                set: { if !$0 { pendingCurrency = nil } }
+            )
+        ) {
             Button(AppConstants.Common.cancel, role: .cancel) { pendingCurrency = nil }
             Button(AppConstants.SubTrack.Editor.changeAndClear, role: .destructive) {
                 if let currency = pendingCurrency {
@@ -333,15 +337,18 @@ struct SubscriptionEditorView: View {
     }
 
     private var currencyBinding: Binding<String> {
-        Binding(get: { draft.currency }, set: { currency in
-            guard currency != draft.currency else { return }
-            // 已填写金额时先确认，防止换币种后数值含义出错。
-            if draft.hasMoney { pendingCurrency = currency }
-            else {
-                draft.currency = currency
-                clearFieldError(for: .currency)
-            }
-        })
+        Binding(
+            get: { draft.currency },
+            set: { currency in
+                guard currency != draft.currency else { return }
+                // 已填写金额时先确认，防止换币种后数值含义出错。
+                if draft.hasMoney {
+                    pendingCurrency = currency
+                } else {
+                    draft.currency = currency
+                    clearFieldError(for: .currency)
+                }
+            })
     }
 
     private func validatedBinding<Value>(

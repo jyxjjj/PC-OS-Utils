@@ -56,8 +56,8 @@ struct SubscriptionDetailView: View {
                             : subscription.channel
                     )
                 )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
                 HStack(spacing: AppConstants.SubTrack.Detail.metadataSpacing) {
                     Label(
                         subscription.expiresAt.localizedDate,
@@ -87,7 +87,7 @@ struct SubscriptionDetailView: View {
                     SubscriptionRules.decisionPrice(for: subscription)?
                         .money(currency: subscription.currency) ?? AppConstants.Common.emDash
                 )
-                    .font(.title3.bold())
+                .font(.title3.bold())
                 Text(SubscriptionRules.decisionPriceKind(for: subscription))
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -105,7 +105,7 @@ struct SubscriptionDetailView: View {
                     GridItem(
                         .adaptive(minimum: AppConstants.SubTrack.Detail.gridMinimumWidth),
                         alignment: .leading
-                    ),
+                    )
                 ],
                 alignment: .leading,
                 spacing: AppConstants.SubTrack.Detail.gridSpacing

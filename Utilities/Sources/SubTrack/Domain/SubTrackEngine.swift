@@ -19,8 +19,8 @@ nonisolated enum SubTrackError: LocalizedError, Sendable {
 
     var errorDescription: String? {
         switch self {
-        case let .invalidInput(_, message): message
-        case .unavailable: AppConstants.SubTrack.databaseUnavailable
+            case .invalidInput(_, let message): message
+            case .unavailable: AppConstants.SubTrack.databaseUnavailable
         }
     }
 }
@@ -48,11 +48,13 @@ enum SubscriptionRules {
         input.notes = input.notes.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !input.name.isEmpty,
-              input.name.count <= AppConstants.SubTrack.Rules.maximumNameLength else {
+            input.name.count <= AppConstants.SubTrack.Rules.maximumNameLength
+        else {
             throw SubTrackError.invalidInput(.name, AppConstants.SubTrack.Rules.invalidName)
         }
         guard !input.category.isEmpty,
-              input.category.count <= AppConstants.SubTrack.Rules.maximumCategoryLength else {
+            input.category.count <= AppConstants.SubTrack.Rules.maximumCategoryLength
+        else {
             throw SubTrackError.invalidInput(
                 .category,
                 AppConstants.SubTrack.Rules.invalidCategory
@@ -70,15 +72,13 @@ enum SubscriptionRules {
                 AppConstants.SubTrack.Rules.unsupportedCurrency
             )
         }
-        guard (AppConstants.SubTrack.Rules.minimumExtensionDays ...
-               AppConstants.SubTrack.Rules.maximumExtensionDays).contains(input.extensionDays) else {
+        guard (AppConstants.SubTrack.Rules.minimumExtensionDays ... AppConstants.SubTrack.Rules.maximumExtensionDays).contains(input.extensionDays) else {
             throw SubTrackError.invalidInput(
                 .extensionDays,
                 AppConstants.SubTrack.Rules.invalidExtensionDays
             )
         }
-        guard (AppConstants.SubTrack.Rules.minimumReminderDays ...
-               AppConstants.SubTrack.Rules.maximumReminderDays).contains(input.reminderDays) else {
+        guard (AppConstants.SubTrack.Rules.minimumReminderDays ... AppConstants.SubTrack.Rules.maximumReminderDays).contains(input.reminderDays) else {
             throw SubTrackError.invalidInput(
                 .reminderDays,
                 AppConstants.SubTrack.Rules.invalidReminderDays
@@ -109,13 +109,14 @@ enum SubscriptionRules {
             preconditionFailure(AppConstants.SubTrack.Rules.invalidDateCalculation)
         }
 
-        let status: SubscriptionStatus = if expiryDay < start {
-            .expired
-        } else if days <= subscription.reminderDays {
-            .dueSoon
-        } else {
-            .active
-        }
+        let status: SubscriptionStatus =
+            if expiryDay < start {
+                .expired
+            } else if days <= subscription.reminderDays {
+                .dueSoon
+            } else {
+                .active
+            }
         return SubscriptionView(subscription: subscription, daysRemaining: days, status: status)
     }
 
@@ -124,7 +125,8 @@ enum SubscriptionRules {
         let official = subscription.officialPrice
         let thirdParty = subscription.thirdPartyReference
         if official > AppConstants.SubTrack.Rules.minimumMoney,
-           thirdParty > AppConstants.SubTrack.Rules.minimumMoney {
+            thirdParty > AppConstants.SubTrack.Rules.minimumMoney
+        {
             return min(official, thirdParty)
         }
         if official > AppConstants.SubTrack.Rules.minimumMoney { return official }
@@ -134,7 +136,8 @@ enum SubscriptionRules {
 
     static func decisionPriceKind(for subscription: Subscription) -> String {
         if subscription.officialPrice > AppConstants.SubTrack.Rules.minimumMoney,
-           subscription.thirdPartyReference > AppConstants.SubTrack.Rules.minimumMoney {
+            subscription.thirdPartyReference > AppConstants.SubTrack.Rules.minimumMoney
+        {
             return AppConstants.SubTrack.Rules.lowerPriceKind
         }
         if subscription.thirdPartyReference > AppConstants.SubTrack.Rules.minimumMoney {
@@ -152,7 +155,8 @@ enum SubscriptionRules {
         label: String
     ) throws {
         guard value >= AppConstants.SubTrack.Rules.minimumMoney,
-              value <= AppConstants.SubTrack.Rules.maximumMoney else {
+            value <= AppConstants.SubTrack.Rules.maximumMoney
+        else {
             throw SubTrackError.invalidInput(
                 field,
                 String(format: AppConstants.SubTrack.Rules.invalidMoneyFormat, label)
@@ -176,25 +180,26 @@ enum SubTrackEngine {
         let today = calendar.startOfDay(for: now)
         let current = calendar.dateComponents([.year, .month], from: today)
         guard let startYear = current.year,
-              let startMonth = current.month,
-              let start = calendar.date(
+            let startMonth = current.month,
+            let start = calendar.date(
                 from: DateComponents(
                     year: startYear,
                     month: startMonth,
                     day: AppConstants.SubTrack.Rules.firstDayOfMonth
                 )
-              ),
-              let end = calendar.date(byAdding: .month, value: monthCount, to: start),
-              let next90 = calendar.date(
+            ),
+            let end = calendar.date(byAdding: .month, value: monthCount, to: start),
+            let next90 = calendar.date(
                 byAdding: .day,
                 value: AppConstants.SubTrack.Rules.forecastDays,
                 to: today
-              ),
-              let next90Exclusive = calendar.date(
+            ),
+            let next90Exclusive = calendar.date(
                 byAdding: .day,
                 value: AppConstants.SubTrack.Rules.nextDayOffset,
                 to: next90
-              ) else {
+            )
+        else {
             return ForecastSummary(buckets: [], next90Days: [])
         }
 
@@ -204,14 +209,16 @@ enum SubTrackEngine {
 
         for item in subscriptions {
             guard let price = SubscriptionRules.decisionPrice(for: item),
-                  price > AppConstants.SubTrack.Rules.minimumMoney else {
+                price > AppConstants.SubTrack.Rules.minimumMoney
+            else {
                 continue
             }
             var renewal = max(calendar.startOfDay(for: item.expiresAt), today)
             while renewal < horizon {
                 let components = calendar.dateComponents([.year, .month], from: renewal)
                 guard let year = components.year, let month = components.month else { break }
-                let offset = (year - startYear) * AppConstants.SubTrack.Rules.monthsPerYear
+                let offset =
+                    (year - startYear) * AppConstants.SubTrack.Rules.monthsPerYear
                     + month
                     - startMonth
                 if (0 ..< monthCount).contains(offset) {
@@ -230,10 +237,11 @@ enum SubTrackEngine {
             guard let date = calendar.date(byAdding: .month, value: offset, to: start) else { break }
             let components = calendar.dateComponents([.year, .month], from: date)
             guard let year = components.year, let month = components.month else { break }
-            buckets.append(ForecastBucket(
-                month: monthKey(year: year, month: month),
-                totals: currencyTotals(totalsByMonth[offset] ?? [:])
-            ))
+            buckets.append(
+                ForecastBucket(
+                    month: monthKey(year: year, month: month),
+                    totals: currencyTotals(totalsByMonth[offset] ?? [:])
+                ))
         }
         return ForecastSummary(buckets: buckets, next90Days: currencyTotals(next90Totals))
     }

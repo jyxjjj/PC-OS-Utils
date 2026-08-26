@@ -42,14 +42,13 @@ struct SubTrackContentView: View {
                 try await Task.sleep(
                     for: .milliseconds(AppConstants.SubTrack.Content.noticeMilliseconds)
                 )
-            }
-            catch { return }
+            } catch { return }
             model.notice = ""
         }
         .sheet(item: $model.presentedSheet) { sheet in
             switch sheet {
-            case let .editor(subscription):
-                SubscriptionEditorView(subscription: subscription)
+                case .editor(let subscription):
+                    SubscriptionEditorView(subscription: subscription)
             }
         }
         .overlay(alignment: .bottom) {
@@ -94,9 +93,9 @@ private struct DashboardView: View {
             into: (active: 0, dueSoon: 0, expired: 0)
         ) { counts, view in
             switch view.status {
-            case .active: counts.active += 1
-            case .dueSoon: counts.dueSoon += 1
-            case .expired: counts.expired += 1
+                case .active: counts.active += 1
+                case .dueSoon: counts.dueSoon += 1
+                case .expired: counts.expired += 1
             }
         }
 
@@ -148,7 +147,7 @@ private struct DashboardView: View {
                 GridItem(
                     .adaptive(minimum: AppConstants.SubTrack.Content.metricMinimumWidth),
                     spacing: AppConstants.SubTrack.Content.metricGridSpacing
-                ),
+                )
             ],
             spacing: AppConstants.SubTrack.Content.metricGridSpacing
         ) {
@@ -222,8 +221,8 @@ private struct ProjectsPane: View {
                         filteredViews.count
                     )
                 )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
 
             if filteredViews.isEmpty {
@@ -378,8 +377,8 @@ private struct SubscriptionRow: View {
                                 remainingText
                             )
                         )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
                     Spacer()
                     VStack(
@@ -390,7 +389,7 @@ private struct SubscriptionRow: View {
                             SubscriptionRules.decisionPrice(for: item)?
                                 .money(currency: item.currency) ?? AppConstants.Common.emDash
                         )
-                            .font(.body.weight(.semibold))
+                        .font(.body.weight(.semibold))
                         Text(SubscriptionRules.decisionPriceKind(for: item))
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -454,8 +453,7 @@ private struct SubscriptionRow: View {
         ) {
             Button(AppConstants.Common.cancel, role: .cancel) {}
             Button(AppConstants.SubTrack.Content.deleteProject, role: .destructive) {
-                do { try model.remove(item) }
-                catch {
+                do { try model.remove(item) } catch {
                     model.notice = String(
                         format: AppConstants.SubTrack.Content.deleteFailedFormat,
                         error.localizedDescription
@@ -485,7 +483,8 @@ private struct ReminderCard: View {
     let views: [SubscriptionView]
 
     var body: some View {
-        let reminders = views
+        let reminders =
+            views
             .filter { $0.status != .active }
 
         VStack(alignment: .leading, spacing: AppConstants.SubTrack.Content.reminderCardSpacing) {
@@ -507,7 +506,7 @@ private struct ReminderCard: View {
                                 view.subscription.name
                             )
                         )
-                            .font(.caption.weight(.bold))
+                        .font(.caption.weight(.bold))
                         Text(
                             view.status == .expired
                                 ? String(
@@ -520,8 +519,8 @@ private struct ReminderCard: View {
                                     view.subscription.expiresAt.localizedDate
                                 )
                         )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     if view.id != reminders.last?.id { Divider() }
@@ -579,9 +578,13 @@ private struct ForecastCard: View {
                     Text(bucket.month)
                         .font(.caption.monospacedDigit())
                     Spacer()
-                    Text(bucket.totals.isEmpty ? AppConstants.Common.emDash : bucket.totals.map {
-                        $0.total.money(currency: $0.currency)
-                    }.joined(separator: AppConstants.Common.itemSeparator))
+                    Text(
+                        bucket.totals.isEmpty
+                            ? AppConstants.Common.emDash
+                            : bucket.totals.map {
+                                $0.total.money(currency: $0.currency)
+                            }.joined(separator: AppConstants.Common.itemSeparator)
+                    )
                     .font(.caption.weight(.semibold))
                 }
             }

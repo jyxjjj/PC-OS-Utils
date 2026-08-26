@@ -201,9 +201,11 @@ final class CodexAppModel {
             sessionsByID[session.id] = session
         }
         let uniqueSessions = Array(sessionsByID.values)
-        let children = Dictionary(grouping: uniqueSessions.compactMap { session in
-            session.parentID.map { ($0, session) }
-        }, by: { $0.0 }).mapValues { $0.map { $0.1 } }
+        let children = Dictionary(
+            grouping: uniqueSessions.compactMap { session in
+                session.parentID.map { ($0, session) }
+            }, by: { $0.0 }
+        ).mapValues { $0.map { $0.1 } }
 
         func node(_ session: CodexSession) -> CodexSessionNode {
             CodexSessionNode(
@@ -241,9 +243,9 @@ nonisolated private enum CodexDirectoryError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .accessDenied: AppConstants.Codex.accessDenied
-        case let .invalidDirectory(expected, selected):
-            String(format: AppConstants.Codex.invalidDirectory, expected, selected)
+            case .accessDenied: AppConstants.Codex.accessDenied
+            case .invalidDirectory(let expected, let selected):
+                String(format: AppConstants.Codex.invalidDirectory, expected, selected)
         }
     }
 }

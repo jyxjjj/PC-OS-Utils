@@ -10,8 +10,7 @@ extension Decimal {
             )
             .precision(
                 .fractionLength(
-                    AppConstants.SubTrack.Formatting.minimumFractionDigits ...
-                        AppConstants.SubTrack.Formatting.maximumFractionDigits
+                    AppConstants.SubTrack.Formatting.minimumFractionDigits ... AppConstants.SubTrack.Formatting.maximumFractionDigits
                 )
             )
         )
@@ -32,9 +31,9 @@ extension Date {
 extension SubscriptionStatus {
     var color: Color {
         switch self {
-        case .active: .green
-        case .dueSoon: .orange
-        case .expired: .red
+            case .active: .green
+            case .dueSoon: .orange
+            case .expired: .red
         }
     }
 }

@@ -1,5 +1,5 @@
-import SwiftUI
 import AppKit
+import SwiftUI
 
 struct LauncherView: View {
     @Environment(\.openWindow) private var openWindow
@@ -10,12 +10,14 @@ struct LauncherView: View {
     private let projectURL = URL(string: AppConstants.Launcher.projectURL)!
 
     private var version: String {
-        let shortVersion = Bundle.main.object(
-            forInfoDictionaryKey: AppConstants.Launcher.shortVersionKey
-        ) as! String
-        let build = Bundle.main.object(
-            forInfoDictionaryKey: AppConstants.Launcher.buildVersionKey
-        ) as! String
+        let shortVersion =
+            Bundle.main.object(
+                forInfoDictionaryKey: AppConstants.Launcher.shortVersionKey
+            ) as! String
+        let build =
+            Bundle.main.object(
+                forInfoDictionaryKey: AppConstants.Launcher.buildVersionKey
+            ) as! String
         return String(
             format: AppConstants.Launcher.versionFormat,
             shortVersion,
@@ -141,8 +143,8 @@ struct LauncherView: View {
                     AppConstants.Launcher.launch,
                     systemImage: "arrow.up.forward.app"
                 )
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(tint)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(tint)
             }
             .padding(AppConstants.Launcher.cardPadding)
             .frame(

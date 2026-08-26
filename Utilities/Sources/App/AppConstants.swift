@@ -441,7 +441,6 @@ nonisolated enum AppConstants {
             static let subscriptionMinimumWidth = 600.0
             static let subscriptionMinimumHeight = 360.0
             static let subscriptionIdealHeight = 640.0
-
         }
 
         nonisolated enum Content {

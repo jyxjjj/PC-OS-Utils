@@ -89,7 +89,7 @@ struct CodexContentView: View {
                                             ForEach(model.unreadableFiles) { file in
                                                 Button {
                                                     NSWorkspace.shared.activateFileViewerSelecting([
-                                                        file.url,
+                                                        file.url
                                                     ])
                                                 } label: {
                                                     HStack {
@@ -157,7 +157,6 @@ struct CodexContentView: View {
                     Label(AppConstants.Codex.refresh, systemImage: "arrow.clockwise")
                 }
                 .disabled(model.directoryURL == nil || model.isRefreshing)
-
             }
         }
         .fileImporter(
@@ -234,21 +233,21 @@ private struct SessionRow: View {
 
     private var statusSymbol: String {
         switch status {
-        case .unloaded: "circle.fill"
-        case .running: "circle.fill"
-        case .completed: "checkmark.circle.fill"
-        case .interrupted: "pause.circle.fill"
-        case .shutdown: "stop.circle.fill"
+            case .unloaded: "circle.fill"
+            case .running: "circle.fill"
+            case .completed: "checkmark.circle.fill"
+            case .interrupted: "pause.circle.fill"
+            case .shutdown: "stop.circle.fill"
         }
     }
 
     private var statusColor: Color {
         switch status {
-        case .unloaded: .secondary
-        case .running: .green
-        case .completed: .blue
-        case .interrupted: .orange
-        case .shutdown: .secondary
+            case .unloaded: .secondary
+            case .running: .green
+            case .completed: .blue
+            case .interrupted: .orange
+            case .shutdown: .secondary
         }
     }
 }
@@ -338,10 +337,11 @@ private struct SessionDetail: View {
                     ProgressView(value: min(ratio, 1))
                         .tint(contextColor(ratio))
                     HStack {
-                        Text(String(
-                            format: AppConstants.Codex.contextUsed,
-                            tokenCount(usage.totalTokens)
-                        ))
+                        Text(
+                            String(
+                                format: AppConstants.Codex.contextUsed,
+                                tokenCount(usage.totalTokens)
+                            ))
                         Spacer()
                         Text(ratio.formatted(.percent.precision(.fractionLength(1))))
                     }
@@ -462,7 +462,8 @@ private struct SessionDetail: View {
     }
 
     private func tokenSection(_ title: String, usage: CodexTokenUsage) -> some View {
-        let uncachedInput = usage.inputTokens
+        let uncachedInput =
+            usage.inputTokens
             - usage.cachedInputTokens
             - usage.cacheWriteInputTokens
         let regularOutput = usage.outputTokens - usage.reasoningOutputTokens
@@ -584,20 +585,20 @@ private struct SessionDetail: View {
 
     private func statusName(_ status: CodexSessionStatus) -> String {
         switch status {
-        case .unloaded: AppConstants.Codex.unloaded
-        case .running: AppConstants.Codex.running
-        case .completed: AppConstants.Codex.completed
-        case .interrupted: AppConstants.Codex.interrupted
-        case .shutdown: AppConstants.Codex.shutdown
+            case .unloaded: AppConstants.Codex.unloaded
+            case .running: AppConstants.Codex.running
+            case .completed: AppConstants.Codex.completed
+            case .interrupted: AppConstants.Codex.interrupted
+            case .shutdown: AppConstants.Codex.shutdown
         }
     }
 
     private func statusColor(_ status: CodexSessionStatus) -> Color {
         switch status {
-        case .unloaded, .shutdown: .secondary
-        case .running: .green
-        case .completed: .blue
-        case .interrupted: .orange
+            case .unloaded, .shutdown: .secondary
+            case .running: .green
+            case .completed: .blue
+            case .interrupted: .orange
         }
     }
 

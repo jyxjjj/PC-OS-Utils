@@ -11,7 +11,7 @@ enum PresentedSheet: Identifiable {
 
     var id: ID {
         switch self {
-        case let .editor(subscription): .editor(subscription?.persistentModelID)
+            case .editor(let subscription): .editor(subscription?.persistentModelID)
         }
     }
 }
@@ -47,10 +47,12 @@ final class AppModel {
     }
 
     func filteredViews(from views: [SubscriptionView]) -> [SubscriptionView] {
-        let keyword = query
+        let keyword =
+            query
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .localizedLowercase
-        return views
+        return
+            views
             .filter { view in
                 let item = view.subscription
                 if let priorityFilter, priorityFilter != item.priority { return false }

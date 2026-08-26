@@ -86,12 +86,13 @@ actor CodexSessionScanner {
                 .isSymbolicLinkKey,
             ])
             guard directoryValues.isDirectory == true,
-                  directoryValues.isSymbolicLink != true,
-                  let enumerator = FileManager.default.enumerator(
-                      at: sessionsDirectory,
-                      includingPropertiesForKeys: Array(keys),
-                      options: [.skipsHiddenFiles, .skipsPackageDescendants]
-                  ) else {
+                directoryValues.isSymbolicLink != true,
+                let enumerator = FileManager.default.enumerator(
+                    at: sessionsDirectory,
+                    includingPropertiesForKeys: Array(keys),
+                    options: [.skipsHiddenFiles, .skipsPackageDescendants]
+                )
+            else {
                 throw CodexScanError.cannotEnumerate
             }
 
@@ -101,13 +102,15 @@ actor CodexSessionScanner {
                 do {
                     let values = try url.resourceValues(forKeys: keys)
                     guard values.isRegularFile == true,
-                          values.isSymbolicLink != true else { continue }
+                        values.isSymbolicLink != true
+                    else { continue }
                     files.append((url, values))
                 } catch {
-                    unreadableFiles.append(CodexUnreadableFile(
-                        url: url,
-                        reason: error.localizedDescription
-                    ))
+                    unreadableFiles.append(
+                        CodexUnreadableFile(
+                            url: url,
+                            reason: error.localizedDescription
+                        ))
                 }
             }
         }
@@ -119,20 +122,22 @@ actor CodexSessionScanner {
         for (url, values) in files {
             try Task.checkCancellation()
             guard let size = values.fileSize, let modifiedAt = values.contentModificationDate else {
-                unreadableFiles.append(CodexUnreadableFile(
-                    url: url,
-                    reason: AppConstants.Codex.missingFileAttributes
-                ))
+                unreadableFiles.append(
+                    CodexUnreadableFile(
+                        url: url,
+                        reason: AppConstants.Codex.missingFileAttributes
+                    ))
                 continue
             }
             if let cached = cache[url], cached.size == size, cached.modifiedAt == modifiedAt {
                 if let session = cached.session {
                     sessions.append(session)
                 } else {
-                    unreadableFiles.append(CodexUnreadableFile(
-                        url: url,
-                        reason: AppConstants.Codex.missingSessionMetadata
-                    ))
+                    unreadableFiles.append(
+                        CodexUnreadableFile(
+                            url: url,
+                            reason: AppConstants.Codex.missingSessionMetadata
+                        ))
                 }
                 continue
             }
@@ -148,16 +153,18 @@ actor CodexSessionScanner {
                 if let session {
                     sessions.append(session)
                 } else {
-                    unreadableFiles.append(CodexUnreadableFile(
-                        url: url,
-                        reason: AppConstants.Codex.missingSessionMetadata
-                    ))
+                    unreadableFiles.append(
+                        CodexUnreadableFile(
+                            url: url,
+                            reason: AppConstants.Codex.missingSessionMetadata
+                        ))
                 }
             } catch {
-                unreadableFiles.append(CodexUnreadableFile(
-                    url: url,
-                    reason: error.localizedDescription
-                ))
+                unreadableFiles.append(
+                    CodexUnreadableFile(
+                        url: url,
+                        reason: error.localizedDescription
+                    ))
             }
         }
 
@@ -183,16 +190,18 @@ actor CodexSessionScanner {
                 if let parsedSession = try await scan(file: session.fileURL) {
                     focusedSessions.append(parsedSession)
                 } else {
-                    focusedUnreadableFiles.append(CodexUnreadableFile(
-                        url: session.fileURL,
-                        reason: AppConstants.Codex.missingSessionMetadata
-                    ))
+                    focusedUnreadableFiles.append(
+                        CodexUnreadableFile(
+                            url: session.fileURL,
+                            reason: AppConstants.Codex.missingSessionMetadata
+                        ))
                 }
             } catch {
-                focusedUnreadableFiles.append(CodexUnreadableFile(
-                    url: session.fileURL,
-                    reason: error.localizedDescription
-                ))
+                focusedUnreadableFiles.append(
+                    CodexUnreadableFile(
+                        url: session.fileURL,
+                        reason: error.localizedDescription
+                    ))
             }
         }
 
@@ -212,15 +221,17 @@ actor CodexSessionScanner {
             .contentModificationDateKey,
         ])
         guard values.isRegularFile == true,
-              values.isSymbolicLink != true,
-              let size = values.fileSize,
-              let modifiedAt = values.contentModificationDate else {
+            values.isSymbolicLink != true,
+            let size = values.fileSize,
+            let modifiedAt = values.contentModificationDate
+        else {
             throw CodexScanError.cannotReadFileAttributes
         }
         if let cached = cache[url],
-           cached.size == size,
-           cached.modifiedAt == modifiedAt,
-           cached.isComplete {
+            cached.size == size,
+            cached.modifiedAt == modifiedAt,
+            cached.isComplete
+        {
             return cached.session
         }
 
@@ -242,10 +253,12 @@ actor CodexSessionScanner {
         let timestamp = String(fileName.dropFirst(8).prefix(19))
         let conversationID = String(fileName.suffix(36))
         guard fileNameDateFormatter.date(from: timestamp) != nil,
-              UUID(uuidString: conversationID) != nil else {
+            UUID(uuidString: conversationID) != nil
+        else {
             throw CodexScanError.invalidFileName
         }
-        let displayedTimestamp = timestamp.prefix(10)
+        let displayedTimestamp =
+            timestamp.prefix(10)
             + " "
             + timestamp.dropFirst(11).replacingOccurrences(of: "-", with: ":")
         return String(displayedTimestamp)
@@ -259,7 +272,7 @@ actor CodexSessionScanner {
         for try await line in handle.bytes.lines where !line.isEmpty {
             try Task.checkCancellation()
             let record = try JSONDecoder().decode(RolloutRecord.self, from: Data(line.utf8))
-            guard case let .sessionMetadata(metadata) = record.item else { return nil }
+            guard case .sessionMetadata(let metadata) = record.item else { return nil }
             var builder = SessionBuilder(
                 fileURL: url,
                 fileTimestamp: timestamp,
@@ -348,15 +361,15 @@ nonisolated private struct SessionBuilder {
                 if ordinal < start { return }
             }
             switch record.item {
-            case let .sessionMetadata(value):
-                metadata = value
-            case let .turnContext(value):
-                model = value.model
-                reasoningEffort = value.effort
-            case let .event(value):
-                consume(value)
-            case .ignored:
-                break
+                case .sessionMetadata(let value):
+                    metadata = value
+                case .turnContext(let value):
+                    model = value.model
+                    reasoningEffort = value.effort
+                case .event(let value):
+                    consume(value)
+                case .ignored:
+                    break
             }
         } catch {
             parseErrors += 1
@@ -365,32 +378,32 @@ nonisolated private struct SessionBuilder {
 
     mutating private func consume(_ event: SessionEvent) {
         switch event {
-        case let .turnStarted(window):
-            status = .running
-            if let window { contextWindow = window }
-        case let .turnCompleted(duration, timeToFirstToken):
-            status = .completed
-            completedTurns += 1
-            if let duration { durationMilliseconds += duration }
-            if let timeToFirstToken {
-                timeToFirstTokenMilliseconds += timeToFirstToken
-                timeToFirstTokenSamples += 1
-            }
-        case let .tokenCount(info):
-            guard let info else { return }
-            totalUsage = info.total
-            lastUsage = info.last
-            contextWindow = info.contextWindow
-        case let .turnAborted(duration):
-            status = .interrupted
-            if let duration { durationMilliseconds += duration }
-        case .shutdown:
-            status = .shutdown
-        case let .settings(value):
-            model = value.model
-            reasoningEffort = value.effort
-        case .ignored:
-            break
+            case .turnStarted(let window):
+                status = .running
+                if let window { contextWindow = window }
+            case .turnCompleted(let duration, let timeToFirstToken):
+                status = .completed
+                completedTurns += 1
+                if let duration { durationMilliseconds += duration }
+                if let timeToFirstToken {
+                    timeToFirstTokenMilliseconds += timeToFirstToken
+                    timeToFirstTokenSamples += 1
+                }
+            case .tokenCount(let info):
+                guard let info else { return }
+                totalUsage = info.total
+                lastUsage = info.last
+                contextWindow = info.contextWindow
+            case .turnAborted(let duration):
+                status = .interrupted
+                if let duration { durationMilliseconds += duration }
+            case .shutdown:
+                status = .shutdown
+            case .settings(let value):
+                model = value.model
+                reasoningEffort = value.effort
+            case .ignored:
+                break
         }
     }
 
@@ -445,14 +458,14 @@ nonisolated private struct RolloutRecord: Decodable {
         timestamp = parsedTimestamp
         ordinal = try container.decodeIfPresent(UInt64.self, forKey: .ordinal)
         switch try container.decode(String.self, forKey: .type) {
-        case "session_meta":
-            item = .sessionMetadata(try container.decode(SessionMetadata.self, forKey: .payload))
-        case "turn_context":
-            item = .turnContext(try container.decode(TurnContext.self, forKey: .payload))
-        case "event_msg":
-            item = .event(try container.decode(SessionEvent.self, forKey: .payload))
-        default:
-            item = .ignored
+            case "session_meta":
+                item = .sessionMetadata(try container.decode(SessionMetadata.self, forKey: .payload))
+            case "turn_context":
+                item = .turnContext(try container.decode(TurnContext.self, forKey: .payload))
+            case "event_msg":
+                item = .event(try container.decode(SessionEvent.self, forKey: .payload))
+            default:
+                item = .ignored
         }
     }
 
@@ -501,7 +514,8 @@ nonisolated private struct SessionMetadata: Decodable {
         parentID = try container.decodeIfPresent(String.self, forKey: .parentID)
         workingDirectory = try container.decode(String.self, forKey: .workingDirectory)
         nickname = try container.decodeIfPresent(String.self, forKey: .nickname)
-        role = try container.decodeIfPresent(String.self, forKey: .role)
+        role =
+            try container.decodeIfPresent(String.self, forKey: .role)
             ?? container.decodeIfPresent(String.self, forKey: .legacyRole)
         historyStartOrdinal = try container.decodeIfPresent(
             UInt64.self,
@@ -538,30 +552,30 @@ nonisolated private enum SessionEvent: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         switch try container.decode(String.self, forKey: .type) {
-        case "task_started", "turn_started":
-            self = .turnStarted(try container.decodeIfPresent(Int.self, forKey: .modelContextWindow))
-        case "task_complete", "turn_complete":
-            self = .turnCompleted(
-                try container.decodeIfPresent(Int64.self, forKey: .duration),
-                try container.decodeIfPresent(Int64.self, forKey: .timeToFirstToken)
-            )
-        case "token_count":
-            self = .tokenCount(try container.decodeIfPresent(TokenUsageInfo.self, forKey: .info))
-        case "turn_aborted":
-            self = .turnAborted(try container.decodeIfPresent(Int64.self, forKey: .duration))
-        case "shutdown_complete":
-            self = .shutdown
-        case "thread_settings_applied":
-            self = .settings(try container.decode(SessionSettings.self, forKey: .threadSettings))
-        case "session_configured":
-            self = .settings(
-                SessionSettings(
-                    model: try container.decode(String.self, forKey: .model),
-                    effort: try container.decodeIfPresent(String.self, forKey: .effort)
+            case "task_started", "turn_started":
+                self = .turnStarted(try container.decodeIfPresent(Int.self, forKey: .modelContextWindow))
+            case "task_complete", "turn_complete":
+                self = .turnCompleted(
+                    try container.decodeIfPresent(Int64.self, forKey: .duration),
+                    try container.decodeIfPresent(Int64.self, forKey: .timeToFirstToken)
                 )
-            )
-        default:
-            self = .ignored
+            case "token_count":
+                self = .tokenCount(try container.decodeIfPresent(TokenUsageInfo.self, forKey: .info))
+            case "turn_aborted":
+                self = .turnAborted(try container.decodeIfPresent(Int64.self, forKey: .duration))
+            case "shutdown_complete":
+                self = .shutdown
+            case "thread_settings_applied":
+                self = .settings(try container.decode(SessionSettings.self, forKey: .threadSettings))
+            case "session_configured":
+                self = .settings(
+                    SessionSettings(
+                        model: try container.decode(String.self, forKey: .model),
+                        effort: try container.decodeIfPresent(String.self, forKey: .effort)
+                    )
+                )
+            default:
+                self = .ignored
         }
     }
 }
@@ -596,10 +610,10 @@ nonisolated enum CodexScanError: Error, LocalizedError, Sendable {
 
     var errorDescription: String? {
         switch self {
-        case .cannotEnumerate: AppConstants.Codex.cannotEnumerate
-        case .cannotReadFileAttributes: AppConstants.Codex.missingFileAttributes
-        case .invalidFileName: AppConstants.Codex.invalidSessionFileName
-        case .sessionFileNotFound: AppConstants.Codex.sessionFileNotFound
+            case .cannotEnumerate: AppConstants.Codex.cannotEnumerate
+            case .cannotReadFileAttributes: AppConstants.Codex.missingFileAttributes
+            case .invalidFileName: AppConstants.Codex.invalidSessionFileName
+            case .sessionFileNotFound: AppConstants.Codex.sessionFileNotFound
         }
     }
 }

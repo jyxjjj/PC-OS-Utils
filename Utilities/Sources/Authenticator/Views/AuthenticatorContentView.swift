@@ -39,14 +39,14 @@ struct AuthenticatorContentView: View {
                         ? AppConstants.Authenticator.Unlock.unlocking
                         : AppConstants.Authenticator.Unlock.creatingStore
                 )
-                    .controlSize(.large)
-                    .padding(AppConstants.Authenticator.Unlock.progressPadding)
-                    .glassEffect(
-                        .regular,
-                        in: .rect(
-                            cornerRadius: AppConstants.Authenticator.Unlock.progressCornerRadius
-                        )
+                .controlSize(.large)
+                .padding(AppConstants.Authenticator.Unlock.progressPadding)
+                .glassEffect(
+                    .regular,
+                    in: .rect(
+                        cornerRadius: AppConstants.Authenticator.Unlock.progressCornerRadius
                     )
+                )
             }
         }
     }
@@ -63,7 +63,7 @@ struct AuthenticatorContentView: View {
                         ? AppConstants.Authenticator.Unlock.unlockTitle
                         : AppConstants.Authenticator.Unlock.setupTitle
                 )
-                    .font(.title.bold())
+                .font(.title.bold())
                 Text(
                     appState.isConfigured
                         ? AppConstants.Authenticator.Unlock.configuredDescription
@@ -110,12 +110,12 @@ struct AuthenticatorContentView: View {
                     : AppConstants.Authenticator.Unlock.createAndLaunch,
                 action: beginUnlock
             )
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(
-                    userKey.isEmpty
-                        || (!appState.isConfigured && keyConfirmation.isEmpty)
-                )
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(
+                userKey.isEmpty
+                    || (!appState.isConfigured && keyConfirmation.isEmpty)
+            )
         }
         .frame(maxWidth: AppConstants.Authenticator.Unlock.maximumContentWidth)
         .padding(AppConstants.Authenticator.Unlock.contentPadding)

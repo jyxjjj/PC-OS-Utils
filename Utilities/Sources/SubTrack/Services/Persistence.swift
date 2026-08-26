@@ -9,7 +9,7 @@ final class SubTrackStore {
 
     init() throws {
         let schema = Schema([
-            Subscription.self,
+            Subscription.self
         ])
         let configuration = ModelConfiguration(
             AppConstants.SubTrack.modelConfigurationName,

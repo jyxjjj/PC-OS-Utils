@@ -16,10 +16,12 @@ nonisolated struct CodexSessionIndexEntry: Decodable, Identifiable, Sendable {
         id = try container.decode(String.self, forKey: .id)
         threadName = try container.decode(String.self, forKey: .threadName)
         let value = try container.decode(String.self, forKey: .updatedAt)
-        guard let date = try? Date(
-            value,
-            strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)
-        ) else {
+        guard
+            let date = try? Date(
+                value,
+                strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+            )
+        else {
             throw DecodingError.dataCorruptedError(
                 forKey: .updatedAt,
                 in: container,
@@ -80,10 +82,11 @@ nonisolated struct CodexTokenUsage: Decodable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         inputTokens = try container.decode(Int.self, forKey: .inputTokens)
         cachedInputTokens = try container.decode(Int.self, forKey: .cachedInputTokens)
-        cacheWriteInputTokens = try container.decodeIfPresent(
-            Int.self,
-            forKey: .cacheWriteInputTokens
-        ) ?? 0
+        cacheWriteInputTokens =
+            try container.decodeIfPresent(
+                Int.self,
+                forKey: .cacheWriteInputTokens
+            ) ?? 0
         outputTokens = try container.decode(Int.self, forKey: .outputTokens)
         reasoningOutputTokens = try container.decode(Int.self, forKey: .reasoningOutputTokens)
         totalTokens = try container.decode(Int.self, forKey: .totalTokens)
@@ -165,7 +168,6 @@ nonisolated struct CodexSessionNode: Identifiable, Sendable {
         guard samples > 0 else { return nil }
         return wholeTimeToFirstTokenMilliseconds / Int64(samples)
     }
-
 }
 
 nonisolated struct CodexScanResult: Sendable {

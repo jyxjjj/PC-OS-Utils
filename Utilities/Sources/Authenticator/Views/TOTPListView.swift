@@ -24,27 +24,27 @@ struct TOTPListView: View {
                         List {
                             ForEach(appState.entries) { entry in
                                 TOTPRowView(entry: entry, date: context.date)
-                                .contentShape(Rectangle())
-                                .swipeActions(
-                                    edge: .trailing,
-                                    allowsFullSwipe: false
-                                ) {
-                                    Button(AppConstants.Common.delete, role: .destructive) {
-                                        entryToDelete = entry
-                                    }
-                                    .tint(.red)
+                                    .contentShape(Rectangle())
+                                    .swipeActions(
+                                        edge: .trailing,
+                                        allowsFullSwipe: false
+                                    ) {
+                                        Button(AppConstants.Common.delete, role: .destructive) {
+                                            entryToDelete = entry
+                                        }
+                                        .tint(.red)
 
-                                    Button(AppConstants.Common.edit) {
-                                        entryToEdit = entry
+                                        Button(AppConstants.Common.edit) {
+                                            entryToEdit = entry
+                                        }
                                     }
-                                }
-                                .contextMenu {
-                                    Button(AppConstants.Common.edit) { entryToEdit = entry }
-                                    Divider()
-                                    Button(AppConstants.Common.delete, role: .destructive) {
-                                        entryToDelete = entry
+                                    .contextMenu {
+                                        Button(AppConstants.Common.edit) { entryToEdit = entry }
+                                        Divider()
+                                        Button(AppConstants.Common.delete, role: .destructive) {
+                                            entryToDelete = entry
+                                        }
                                     }
-                                }
                             }
                             .onMove(perform: moveEntries)
                         }
@@ -55,7 +55,9 @@ struct TOTPListView: View {
             .navigationTitle(AppConstants.Authenticator.List.title)
             .toolbar {
                 ToolbarItem(placement: .automatic) {
-                    Button { appState.lock() } label: {
+                    Button {
+                        appState.lock()
+                    } label: {
                         Label(
                             AppConstants.Authenticator.List.lock,
                             systemImage: "lock"
@@ -66,14 +68,18 @@ struct TOTPListView: View {
                 ToolbarSpacer(.fixed)
 
                 ToolbarItemGroup(placement: .automatic) {
-                    Button { transferMode = .export } label: {
+                    Button {
+                        transferMode = .export
+                    } label: {
                         Label(
                             AppConstants.Authenticator.List.export,
                             systemImage: "square.and.arrow.up"
                         )
                     }
 
-                    Button { transferMode = .import } label: {
+                    Button {
+                        transferMode = .import
+                    } label: {
                         Label(
                             AppConstants.Authenticator.List.import,
                             systemImage: "square.and.arrow.down"
@@ -82,7 +88,9 @@ struct TOTPListView: View {
                 }
 
                 ToolbarItem(placement: .primaryAction) {
-                    Button { showAddEntry = true } label: {
+                    Button {
+                        showAddEntry = true
+                    } label: {
                         Label(
                             AppConstants.Authenticator.List.addAccount,
                             systemImage: "plus"
@@ -129,7 +137,9 @@ struct TOTPListView: View {
             )
         ) {
             Button(AppConstants.Common.confirm) {}
-        } message: { Text(errorMessage) }
+        } message: {
+            Text(errorMessage)
+        }
     }
 
     private var emptyState: some View {

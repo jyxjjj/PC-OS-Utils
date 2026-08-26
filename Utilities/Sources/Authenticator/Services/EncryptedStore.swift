@@ -204,11 +204,12 @@ nonisolated private enum AuthenticatorCrypto {
         using key: SymmetricKey,
         authenticating authenticatedData: Data? = nil
     ) throws -> Data {
-        let box = if let authenticatedData {
-            try AES.GCM.seal(payload, using: key, authenticating: authenticatedData)
-        } else {
-            try AES.GCM.seal(payload, using: key)
-        }
+        let box =
+            if let authenticatedData {
+                try AES.GCM.seal(payload, using: key, authenticating: authenticatedData)
+            } else {
+                try AES.GCM.seal(payload, using: key)
+            }
         guard let combined = box.combined else {
             throw AuthenticatorStoreError.encryptionFailed
         }
@@ -470,16 +471,16 @@ nonisolated enum AuthenticatorStoreError: Error, LocalizedError, Sendable {
 
     var errorDescription: String? {
         switch self {
-        case .authenticationFailed: AppConstants.Authenticator.Store.authenticationFailed
-        case .duplicateEntries: AppConstants.Authenticator.Store.duplicateEntries
-        case .encryptionFailed: AppConstants.Authenticator.Store.encryptionFailed
-        case .invalidOrder: AppConstants.Authenticator.Store.invalidOrder
-        case .invalidParameters: AppConstants.Authenticator.Store.invalidParameters
-        case .invalidStore: AppConstants.Authenticator.Store.invalidStore
-        case .keyDerivationFailed: AppConstants.Authenticator.Store.keyDerivationFailed
-        case .emptyKey: AppConstants.Authenticator.Store.emptyKey
-        case .locked: AppConstants.Authenticator.Store.locked
-        case .missingEntry: AppConstants.Authenticator.Store.missingEntry
+            case .authenticationFailed: AppConstants.Authenticator.Store.authenticationFailed
+            case .duplicateEntries: AppConstants.Authenticator.Store.duplicateEntries
+            case .encryptionFailed: AppConstants.Authenticator.Store.encryptionFailed
+            case .invalidOrder: AppConstants.Authenticator.Store.invalidOrder
+            case .invalidParameters: AppConstants.Authenticator.Store.invalidParameters
+            case .invalidStore: AppConstants.Authenticator.Store.invalidStore
+            case .keyDerivationFailed: AppConstants.Authenticator.Store.keyDerivationFailed
+            case .emptyKey: AppConstants.Authenticator.Store.emptyKey
+            case .locked: AppConstants.Authenticator.Store.locked
+            case .missingEntry: AppConstants.Authenticator.Store.missingEntry
         }
     }
 }

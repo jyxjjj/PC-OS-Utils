@@ -87,7 +87,6 @@ func getHIDDevice() -> Int? {
             }
         }
         IOObjectRelease(service)
-
     }
 
     return nil
@@ -145,9 +144,9 @@ func getSPDevice(_ channel: Int) -> Int? {
             )
 
             return switch channel {
-            case -1: left
-            case 1: right
-            default: `case`
+                case -1: left
+                case 1: right
+                default: `case`
             }
         }
     }
@@ -158,14 +157,14 @@ func getSPDevice(_ channel: Int) -> Int? {
 let battery: Int?
 
 switch source {
-case "HID":
-    battery = getHIDDevice()
+    case "HID":
+        battery = getHIDDevice()
 
-case "SP":
-    battery = getSPDevice(channel)
+    case "SP":
+        battery = getSPDevice(channel)
 
-default:
-    battery = nil
+    default:
+        battery = nil
 }
 
 guard let battery else {

@@ -11,10 +11,10 @@ nonisolated enum SubscriptionPriority: String, Codable, CaseIterable, Identifiab
 
     var localizedName: String {
         switch self {
-        case .essential: AppConstants.SubTrack.Model.essentialPriority
-        case .high: AppConstants.SubTrack.Model.highPriority
-        case .normal: AppConstants.SubTrack.Model.normalPriority
-        case .low: AppConstants.SubTrack.Model.lowPriority
+            case .essential: AppConstants.SubTrack.Model.essentialPriority
+            case .high: AppConstants.SubTrack.Model.highPriority
+            case .normal: AppConstants.SubTrack.Model.normalPriority
+            case .low: AppConstants.SubTrack.Model.lowPriority
         }
     }
 }
@@ -26,9 +26,9 @@ nonisolated enum SubscriptionStatus: Sendable {
 
     var localizedName: String {
         switch self {
-        case .active: AppConstants.SubTrack.Model.activeStatus
-        case .dueSoon: AppConstants.SubTrack.Model.dueSoonStatus
-        case .expired: AppConstants.SubTrack.Model.expiredStatus
+            case .active: AppConstants.SubTrack.Model.activeStatus
+            case .dueSoon: AppConstants.SubTrack.Model.dueSoonStatus
+            case .expired: AppConstants.SubTrack.Model.expiredStatus
         }
     }
 }

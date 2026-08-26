@@ -1,6 +1,6 @@
 import AppKit
-import SwiftUI
 import CryptoKit
+import SwiftUI
 
 private struct AuthenticatorRequiredFieldLabel: View {
     let title: String
@@ -177,8 +177,7 @@ struct EntryEditorView: View {
                     }
                     Stepper(
                         value: $digits,
-                        in: AppConstants.Authenticator.minimumDigits ...
-                            AppConstants.Authenticator.maximumDigits
+                        in: AppConstants.Authenticator.minimumDigits ... AppConstants.Authenticator.maximumDigits
                     ) {
                         AuthenticatorRequiredFieldLabel(
                             title: String(
@@ -189,8 +188,7 @@ struct EntryEditorView: View {
                     }
                     Stepper(
                         value: $period,
-                        in: AppConstants.Authenticator.minimumPeriod ...
-                            AppConstants.Authenticator.maximumPeriod,
+                        in: AppConstants.Authenticator.minimumPeriod ... AppConstants.Authenticator.maximumPeriod,
                         step: AppConstants.Authenticator.periodStep
                     ) {
                         AuthenticatorRequiredFieldLabel(
@@ -227,8 +225,8 @@ struct EntryEditorView: View {
                         : AppConstants.Authenticator.Editor.saveChanges,
                     action: beginSave
                 )
-                    .disabled(!canSave || isSaving)
-                    .keyboardShortcut(.defaultAction)
+                .disabled(!canSave || isSaving)
+                .keyboardShortcut(.defaultAction)
             }
             .padding()
         }
@@ -274,7 +272,8 @@ struct EntryEditorView: View {
     }
 
     private var canSave: Bool {
-        let hasServiceName = !serviceName
+        let hasServiceName =
+            !serviceName
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty
         if entry != nil { return hasServiceName }

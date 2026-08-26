@@ -19,9 +19,11 @@ nonisolated enum Base32Codec {
         if let paddingStart = cleaned.firstIndex(of: AppConstants.Authenticator.Base32.padding) {
             payload = cleaned[..<paddingStart]
             let padding = cleaned[paddingStart...]
-            guard padding.allSatisfy({
-                $0 == AppConstants.Authenticator.Base32.padding
-            }) else {
+            guard
+                padding.allSatisfy({
+                    $0 == AppConstants.Authenticator.Base32.padding
+                })
+            else {
                 throw Base32Error.invalidPadding
             }
             paddingCount = padding.count
@@ -32,14 +34,15 @@ nonisolated enum Base32Codec {
 
         guard !payload.isEmpty else { throw Base32Error.empty }
         let remainder = payload.count % 8
-        let requiredPadding = switch remainder {
-        case 0: 0
-        case 2: 6
-        case 4: 4
-        case 5: 3
-        case 7: 1
-        default: throw Base32Error.invalidLength
-        }
+        let requiredPadding =
+            switch remainder {
+                case 0: 0
+                case 2: 6
+                case 4: 4
+                case 5: 3
+                case 7: 1
+                default: throw Base32Error.invalidLength
+            }
         if paddingCount > 0 {
             guard cleaned.count.isMultiple(of: 8), paddingCount == requiredPadding else {
                 throw Base32Error.invalidPadding
@@ -101,21 +104,21 @@ nonisolated enum Base32Codec {
 
         var errorDescription: String? {
             switch self {
-            case .empty:
-                AppConstants.Authenticator.Base32.emptySecret
-            case let .invalidCharacter(character):
-                String(
-                    format: AppConstants.Authenticator.Base32.invalidCharacterFormat,
-                    String(character)
-                )
-            case .nonASCII:
-                AppConstants.Authenticator.Base32.nonASCII
-            case .invalidLength:
-                AppConstants.Authenticator.Base32.invalidLength
-            case .invalidPadding:
-                AppConstants.Authenticator.Base32.invalidPadding
-            case .nonZeroPaddingBits:
-                AppConstants.Authenticator.Base32.nonZeroPaddingBits
+                case .empty:
+                    AppConstants.Authenticator.Base32.emptySecret
+                case .invalidCharacter(let character):
+                    String(
+                        format: AppConstants.Authenticator.Base32.invalidCharacterFormat,
+                        String(character)
+                    )
+                case .nonASCII:
+                    AppConstants.Authenticator.Base32.nonASCII
+                case .invalidLength:
+                    AppConstants.Authenticator.Base32.invalidLength
+                case .invalidPadding:
+                    AppConstants.Authenticator.Base32.invalidPadding
+                case .nonZeroPaddingBits:
+                    AppConstants.Authenticator.Base32.nonZeroPaddingBits
             }
         }
     }

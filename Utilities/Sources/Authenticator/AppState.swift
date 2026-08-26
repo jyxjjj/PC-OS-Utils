@@ -39,18 +39,21 @@ final class AppState {
 
     // MARK: - Entry management
 
-    func addEntry(serviceName: String, username: String, secret: String,
-                  algorithm: TOTPAlgorithm, digits: Int, period: Int) async throws {
+    func addEntry(
+        serviceName: String, username: String, secret: String,
+        algorithm: TOTPAlgorithm, digits: Int, period: Int
+    ) async throws {
         let trimmedServiceName = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedServiceName.isEmpty else { throw AuthError.emptyServiceName }
         guard !trimmedServiceName.contains(AppConstants.Authenticator.labelSeparator),
-              !trimmedUsername.contains(AppConstants.Authenticator.labelSeparator) else {
+            !trimmedUsername.contains(AppConstants.Authenticator.labelSeparator)
+        else {
             throw AuthError.invalidLabel
         }
-        guard (AppConstants.Authenticator.minimumDigits ...
-               AppConstants.Authenticator.maximumDigits).contains(digits),
-              AppConstants.Authenticator.supportedPeriods.contains(period) else {
+        guard (AppConstants.Authenticator.minimumDigits ... AppConstants.Authenticator.maximumDigits).contains(digits),
+            AppConstants.Authenticator.supportedPeriods.contains(period)
+        else {
             throw AuthError.invalidParameters
         }
         let secretData = try Base32Codec.decode(secret)
@@ -85,12 +88,13 @@ final class AppState {
     ) async throws {
         guard !serviceName.isEmpty else { throw AuthError.emptyServiceName }
         guard !serviceName.contains(AppConstants.Authenticator.labelSeparator),
-              !username.contains(AppConstants.Authenticator.labelSeparator) else {
+            !username.contains(AppConstants.Authenticator.labelSeparator)
+        else {
             throw AuthError.invalidLabel
         }
-        guard (AppConstants.Authenticator.minimumDigits ...
-               AppConstants.Authenticator.maximumDigits).contains(digits),
-              AppConstants.Authenticator.supportedPeriods.contains(period) else {
+        guard (AppConstants.Authenticator.minimumDigits ... AppConstants.Authenticator.maximumDigits).contains(digits),
+            AppConstants.Authenticator.supportedPeriods.contains(period)
+        else {
             throw AuthError.invalidParameters
         }
         let entry = TOTPEntry(
@@ -115,12 +119,13 @@ final class AppState {
         normalizedEntry.username = entry.username.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !normalizedEntry.serviceName.isEmpty else { throw AuthError.emptyServiceName }
         guard !normalizedEntry.serviceName.contains(AppConstants.Authenticator.labelSeparator),
-              !normalizedEntry.username.contains(AppConstants.Authenticator.labelSeparator) else {
+            !normalizedEntry.username.contains(AppConstants.Authenticator.labelSeparator)
+        else {
             throw AuthError.invalidLabel
         }
-        guard (AppConstants.Authenticator.minimumDigits ...
-               AppConstants.Authenticator.maximumDigits).contains(normalizedEntry.digits),
-              AppConstants.Authenticator.supportedPeriods.contains(normalizedEntry.period) else {
+        guard (AppConstants.Authenticator.minimumDigits ... AppConstants.Authenticator.maximumDigits).contains(normalizedEntry.digits),
+            AppConstants.Authenticator.supportedPeriods.contains(normalizedEntry.period)
+        else {
             throw AuthError.invalidParameters
         }
         guard entries[index] != normalizedEntry else { return }
@@ -198,11 +203,11 @@ final class AppState {
 
         var errorDescription: String? {
             switch self {
-            case .entryNotFound: return AppConstants.Authenticator.State.entryNotFound
-            case .invalidOrder: return AppConstants.Authenticator.State.invalidOrder
-            case .emptyServiceName: return AppConstants.Authenticator.State.emptyServiceName
-            case .invalidLabel: return AppConstants.Authenticator.State.invalidLabel
-            case .invalidParameters: return AppConstants.Authenticator.State.invalidParameters
+                case .entryNotFound: return AppConstants.Authenticator.State.entryNotFound
+                case .invalidOrder: return AppConstants.Authenticator.State.invalidOrder
+                case .emptyServiceName: return AppConstants.Authenticator.State.emptyServiceName
+                case .invalidLabel: return AppConstants.Authenticator.State.invalidLabel
+                case .invalidParameters: return AppConstants.Authenticator.State.invalidParameters
             }
         }
     }
@@ -214,19 +219,20 @@ final class AppState {
             AppConstants.Authenticator.OTPAuth.invalidAccount
         }
     }
-
 }
 
 nonisolated enum OTPAuthURIBuilder {
     static func make(_ entry: TOTPEntry) throws -> String {
         guard !entry.serviceName.contains(AppConstants.Authenticator.labelSeparator),
-              !entry.username.contains(AppConstants.Authenticator.labelSeparator) else {
+            !entry.username.contains(AppConstants.Authenticator.labelSeparator)
+        else {
             throw AppState.AuthError.invalidLabel
         }
         var components = URLComponents()
         components.scheme = AppConstants.Authenticator.OTPAuth.scheme
         components.host = AppConstants.Authenticator.OTPAuth.host
-        components.path = entry.username.isEmpty
+        components.path =
+            entry.username.isEmpty
             ? String(
                 format: AppConstants.Authenticator.OTPAuth.servicePathFormat,
                 entry.serviceName
@@ -279,15 +285,16 @@ nonisolated enum OTPAuthImportParser {
             let uri = rawLine.trimmingCharacters(in: .whitespaces)
             guard !uri.isEmpty else { continue }
             let parsed = try TOTPEngine.parseOTPAuthURI(uri)
-            entries.append(TOTPEntry(
-                id: UUID(),
-                serviceName: parsed.serviceName,
-                username: parsed.username,
-                secret: parsed.secret,
-                algorithm: parsed.algorithm,
-                digits: parsed.digits,
-                period: parsed.period
-            ))
+            entries.append(
+                TOTPEntry(
+                    id: UUID(),
+                    serviceName: parsed.serviceName,
+                    username: parsed.username,
+                    secret: parsed.secret,
+                    algorithm: parsed.algorithm,
+                    digits: parsed.digits,
+                    period: parsed.period
+                ))
         }
         guard !entries.isEmpty else { throw ImportError.noAccounts }
         return entries
@@ -301,10 +308,10 @@ nonisolated enum OTPAuthImportParser {
 
         var errorDescription: String? {
             switch self {
-            case .fileTooLarge: AppConstants.Authenticator.OTPAuth.fileTooLarge
-            case .invalidEncoding: AppConstants.Authenticator.OTPAuth.invalidEncoding
-            case .noAccounts: AppConstants.Authenticator.OTPAuth.noAccounts
-            case .duplicateAccount: AppConstants.Authenticator.OTPAuth.duplicateAccount
+                case .fileTooLarge: AppConstants.Authenticator.OTPAuth.fileTooLarge
+                case .invalidEncoding: AppConstants.Authenticator.OTPAuth.invalidEncoding
+                case .noAccounts: AppConstants.Authenticator.OTPAuth.noAccounts
+                case .duplicateAccount: AppConstants.Authenticator.OTPAuth.duplicateAccount
             }
         }
     }
