@@ -25,15 +25,15 @@ Helpful for who needs edit the image right after taking a screenshot.
 The built-in `Screenshot.app` supports three situations:
 
 1. Save directly to the clipboard
-   
+
    (<kbd>Command+Shift+5</kbd> → Options → [Save To Section] → Clipboard)
 
-3. Save directly to a file
-   
+2. Save directly to a file
+
    (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [] Show Floating Thumbnail)
 
-5. Show the preview window before saving to a file
-   
+3. Show the preview window before saving to a file
+
    (<kbd>Command+Shift+5</kbd> → Options → [Options Section] → [x] Show Floating Thumbnail)
 
 There are two ways to edit the picture:

@@ -2,7 +2,7 @@
 
 cd /Library/LaunchDaemons
 
-sudo cat <<EOF > com.desmg.zshrc_Apple_Terminal_Remover.plist
+sudo tee com.desmg.zshrc_Apple_Terminal_Remover.plist >/dev/null <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
