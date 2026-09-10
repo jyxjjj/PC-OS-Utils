@@ -18,10 +18,8 @@ nonisolated enum AppConstants {
         static let launcherWindowID = "launcher"
         static let subTrackWindowID = "subtrack"
         static let authenticatorWindowID = "authenticator"
-        static let codexWindowID = "codex-context"
         static let subTrackName = "订阅管理"
         static let authenticatorName = "身份验证器"
-        static let codexName = "Codex Context"
         static let loadingSubTrack = "正在载入订阅管理…"
 
         static let launcherMinimumWidth = 980.0
@@ -30,8 +28,6 @@ nonisolated enum AppConstants {
         static let subTrackMinimumHeight = 680.0
         static let authenticatorMinimumWidth = 400.0
         static let authenticatorMinimumHeight = 500.0
-        static let codexMinimumWidth = 920.0
-        static let codexMinimumHeight = 620.0
     }
 
     nonisolated enum Launcher {
@@ -46,8 +42,6 @@ nonisolated enum AppConstants {
         static let subTrackDescription = "管理订阅、到期提醒与支出预测。"
         static let authenticatorTitle = "身份验证器"
         static let authenticatorDescription = "管理本地加密的 TOTP 验证码。"
-        static let codexTitle = "Codex Context"
-        static let codexDescription = "查看 Codex task、SubAgent 与 token 使用情况。"
         static let license = "GNU Affero General Public License v3.0"
         static let launch = "启动"
 
@@ -66,75 +60,6 @@ nonisolated enum AppConstants {
         static let cardPadding = 22.0
         static let cardMinimumHeight = 234.0
         static let cardCornerRadius = 18.0
-    }
-
-    nonisolated enum Codex {
-        static let bookmarkKey = "CodexSessionsDirectoryBookmark"
-        static let directoryName = ".codex"
-        static let sessionIndexFile = "session_index.jsonl"
-        static let allowedSessionDirectories = ["archived_sessions", "sessions"]
-        static let refreshInterval = 10.0
-        static let warningThreshold = 0.6
-        static let dangerThreshold = 0.8
-        static let sidebarMinimumWidth = 260.0
-        static let sidebarIdealWidth = 320.0
-        static let unreadableFilesMaximumHeight = 180.0
-        static let detailMaximumWidth = 760.0
-        static let statusIndicatorSize = 8.0
-
-        static let authorizationTitle = "选择 ~/.codex 目录"
-        static let authorizationDescription = "请选择 ~/.codex；应用读取 session_index.jsonl、sessions 和 archived_sessions。"
-        static let directorySelectionFailed = "目录选择失败"
-        static let accessDenied = "无法访问已授权的 ~/.codex 目录，请重新选择。"
-        static let invalidDirectory = "只能选择当前用户的 %@ 目录\n当前选择的文件夹：%@"
-        static let cannotEnumerate = "无法枚举 Codex sessions 目录。"
-        static let loadFailed = "无法载入 Codex session 索引"
-        static let noSessions = "没有 Codex session"
-        static let noSessionsDescription = "session_index.jsonl 中没有可读取的对话索引。"
-        static let chooseDirectory = "选择目录"
-        static let refresh = "刷新"
-        static let mainTasks = "Main Tasks"
-        static let subagents = "SubAgent"
-        static let unreadableFiles = "%d 个 JSONL 文件无法载入"
-        static let missingFileAttributes = "无法读取文件属性"
-        static let missingSessionMetadata = "缺少有效 session metadata"
-        static let invalidSessionFileName = "JSONL 文件名格式无效"
-        static let sessionFileNotFound = "找不到所选对话的 Session JSONL 文件"
-        static let selectSession = "选择一个 session"
-        static let currentContext = "当前 Context"
-        static let contextUsed = "已使用 %@ Tokens"
-        static let contextRemaining = "剩余 %@ / %@ Tokens"
-        static let notAvailable = "N/A"
-        static let wholeSession = "整个 Session 总计"
-        static let lastTurn = "最近一轮"
-        static let tokenComposition = "Token 构成"
-        static let totalComposition = "总 Token：输入 / 输出"
-        static let inputComposition = "输入构成"
-        static let outputComposition = "输出构成"
-        static let input = "输入"
-        static let cachedInput = "缓存输入"
-        static let cacheWrite = "缓存写入"
-        static let uncachedInput = "非缓存输入"
-        static let output = "输出"
-        static let reasoning = "推理"
-        static let regularOutput = "非推理输出"
-        static let total = "总计"
-        static let sessionDetails = "Session 详情"
-        static let status = "状态"
-        static let model = "Model"
-        static let reasoningEffort = "推理强度"
-        static let role = "角色"
-        static let workingDirectory = "工作目录"
-        static let unloaded = "未加载"
-        static let completedTurns = "已完成轮次"
-        static let duration = "累计耗时"
-        static let averageTTFT = "平均 TTFT"
-        static let lastActivity = "最后活动"
-        static let parseErrors = "JSONL 解析错误"
-        static let running = "运行中"
-        static let completed = "已完成"
-        static let interrupted = "已中断"
-        static let shutdown = "已关闭"
     }
 
     nonisolated enum Authenticator {

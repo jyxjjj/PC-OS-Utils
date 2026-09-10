@@ -69,13 +69,6 @@ struct LauncherView: View {
                         tint: .cyan,
                         windowID: AppConstants.Application.authenticatorWindowID
                     )
-                    toolCard(
-                        title: AppConstants.Launcher.codexTitle,
-                        description: AppConstants.Launcher.codexDescription,
-                        symbol: "gauge.with.dots.needle.67percent",
-                        tint: .purple,
-                        windowID: AppConstants.Application.codexWindowID
-                    )
                 }
                 .frame(maxHeight: .infinity)
             }

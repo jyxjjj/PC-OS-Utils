@@ -5,5 +5,4 @@
 - `Utilities`: 原生 macOS 工具集。
   - `Authenticator`: 管理 TOTP 验证码及导入导出。
   - `SubTrack`: 管理订阅与购买记录。
-  - `Codex`: 查看任务、SubAgent 状态与 Token 使用情况。
 - `DeviceBattery`: 查询 HID 或蓝牙设备的电量信息。

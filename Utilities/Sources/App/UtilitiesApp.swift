@@ -43,35 +43,6 @@ struct UtilitiesApp: App {
                 )
         }
         .windowStyle(.titleBar)
-
-        Window(
-            AppConstants.Application.codexName,
-            id: AppConstants.Application.codexWindowID
-        ) {
-            CodexRootView()
-                .font(.body)
-                .frame(
-                    minWidth: AppConstants.Application.codexMinimumWidth,
-                    minHeight: AppConstants.Application.codexMinimumHeight
-                )
-        }
-        .windowStyle(.titleBar)
-    }
-}
-
-private struct CodexRootView: View {
-    @Environment(\.openWindow) private var openWindow
-    @State private var model = CodexAppModel()
-
-    var body: some View {
-        CodexContentView()
-            .environment(model)
-            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) {
-                ($0.object as! NSWindow).preventsApplicationTerminationWhenModal = false
-            }
-            .onDisappear {
-                openWindow(id: AppConstants.Application.launcherWindowID)
-            }
     }
 }
 
